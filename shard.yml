@@ -1,0 +1,13 @@
+name: crysh
+version: 0.1.0
+
+authors:
+  - sevensidedmarble <andrewianstewart@gmail.com>
+
+targets:
+  crysh:
+    main: src/crysh.cr
+
+crystal: 0.23.1
+
+license: MIT

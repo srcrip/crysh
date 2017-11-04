@@ -7,10 +7,10 @@ def cd(dir)
 end
 
 def exit(code)
-  if code
-    exit(code.to_i)
+  if code.empty?
+    Process.exit(0)
   else
-    exit(0)
+    Process.exit(code.to_i)
   end
 end
 
@@ -28,7 +28,7 @@ loop do
     command = args.shift
 
     if BUILTINS.has_key? command.to_s
-      BUILTINS[command.to_s].call(args.to_s)
+      BUILTINS[command.to_s].call(args.join)
     else
       pid = Process.fork {
         Process.exec line

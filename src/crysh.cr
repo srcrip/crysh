@@ -6,9 +6,10 @@ require "./crysh/*"
 # end
 
 STDIN.each_line do |line|
-  pid = fork {
-    exec line
+  pid = Process.fork {
+    Process.exec line
   }
 
-  Process.wait pid
+  pid.wait
+  # puts line
 end

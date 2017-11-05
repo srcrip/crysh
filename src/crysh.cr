@@ -1,6 +1,7 @@
 require "./crysh/*"
+require "colorize"
 
-prompt = "❯ "
+prompt = "❯ ".colorize(:blue)
 
 def cd(dir)
   Dir.cd(dir)
@@ -14,9 +15,14 @@ def exit(code)
   end
 end
 
+def exec(commands)
+  Process.exec commands
+end
+
 BUILTINS = {
   "cd"   => ->cd (String),
   "exit" => ->exit (String),
+  "exec" => ->exec (String),
 }
 
 loop do

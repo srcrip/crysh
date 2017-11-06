@@ -1,6 +1,7 @@
 require "./crysh/*"
 require "colorize"
 
+DEBUG = true
 prompt = "❯ ".colorize(:blue)
 
 # BUILTINS
@@ -71,7 +72,7 @@ loop do
     line = line.strip
 
     commands = split_on_pipes(line)
-    # p commands[0]
+    pp commands
 
     placeholder_in = STDIN
     placeholder_out = STDOUT
@@ -83,7 +84,7 @@ loop do
       args = command.to_s.split
       program = args.shift
 
-      p "Program: " + program
+      p "Program: " + program if DEBUG
 
       if builtin? (program.to_s)
         call_builtin(program.to_s, args.join)

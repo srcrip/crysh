@@ -137,6 +137,13 @@ def get_command(ctx)
   line.split.first?
 end
 
+if File.exists? HISTFILE # Does it exist?
+  puts "  Reading history from #{HISTFILE}"
+  File.open(HISTFILE, "r") do |io| # Open a handle
+    fancy.history.load io          # And load it
+  end
+end
+
 begin # Get rid of stacktrace on ^C
   loop do
     # print prompt

@@ -1,6 +1,6 @@
 # crysh
 
-TODO: Write a description here
+A Unix shell written in Crystal.
 
 ## Installation
 
@@ -16,7 +16,7 @@ Crysh currently needs to be built from source. To do that, you must install [Cry
 
 ## Usage
 
-TODO: Write usage instructions here
+Build the program from source, then run it. Crysh can be used like any other unix shell.
 
 ## Development
 
@@ -32,4 +32,4 @@ TODO: Write development instructions here
 
 ## Contributors
 
-- [[your-github-name]](https://github.com/[your-github-name]) sevensidedmarble - creator, maintainer
+- [sevensidedmarble](https://github.com/sevensidedmarble) - creator, maintainer

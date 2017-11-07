@@ -2,31 +2,20 @@ require "./crysh/*"
 require "colorize"
 require "fancyline"
 
-HISTFILE = "#{Dir.current}/history.log"
-DEBUG    = true
+# HISTFILE = "#{Dir.current}/history.log"
+
+Dir.mkdir "#{ENV["HOME"]}/.config/" unless Dir.exists? "#{ENV["HOME"]}/.config/"
+Dir.mkdir "#{ENV["HOME"]}/.config/crysh/" unless Dir.exists? "#{ENV["HOME"]}/.config/crysh/"
+
+HISTFILE = "#{ENV["HOME"]}/.config/crysh/history.log"
+CONFIG   = "#{ENV["HOME"]}/.config/crysh/config.yml"
+
+DEBUG = true
 # prompt = "❯ ".colorize(:blue)
 prompt = "❯ "
 
-# BUILTINS
-def cd(dir)
-  Dir.cd(dir)
-end
-
-def exit(code)
-  if code.empty?
-    Process.exit
-  else
-    Process.exit(code.to_i)
-  end
-end
-
-def exec(commands)
-  Process.exec commands
-end
-
-def export(args)
-  key, value = args.split('=')
-  ENV[key] = value
+def crysh_prompt
+  puts "❯ "
 end
 
 # HELPERS
@@ -138,7 +127,7 @@ def get_command(ctx)
 end
 
 if File.exists? HISTFILE # Does it exist?
-  puts "  Reading history from #{HISTFILE}"
+  puts "Reading history from #{HISTFILE}" if DEBUG
   File.open(HISTFILE, "r") do |io| # Open a handle
     fancy.history.load io          # And load it
   end

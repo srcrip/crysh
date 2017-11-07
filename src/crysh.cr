@@ -1,3 +1,4 @@
+# coding: utf-8
 require "./crysh/*"
 require "colorize"
 require "fancyline"

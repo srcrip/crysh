@@ -33,3 +33,4 @@ TODO: Write development instructions here
 ## Contributors
 
 - [sevensidedmarble](https://github.com/sevensidedmarble) - creator, maintainer
+- [Jacob Evan Shreve](https://github.com/shreve) - not the creator, kinda maintainer

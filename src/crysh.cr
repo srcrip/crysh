@@ -14,11 +14,20 @@ DEBUG = true
 # prompt = "❯ ".colorize(:blue)
 prompt = "❯ "
 
+# this is a flag to check for additional input after the \ char
+more_input = false
+last_input = ""
+
 def crysh_prompt
   puts "❯ "
 end
 
 # HELPERS
+def expand_vars(input)
+  ENV[input.lchomp('$')] if input =~ /(\\$)(?:[a-z][a-z]+)/
+  input.gsub(/(\\$)(?:[a-z][a-z]+)/, "\1")
+end
+
 def spawn_program(program, arguments, placeholder_out, placeholder_in)
   Process.fork {
     unless placeholder_out == STDOUT
@@ -48,13 +57,6 @@ end
 def call_builtin(program, arguments)
   BUILTINS[program].call(arguments)
 end
-
-BUILTINS = {
-  "cd"     => ->cd (String),
-  "exit"   => ->exit (String),
-  "exec"   => ->exec (String),
-  "export" => ->export (String),
-}
 
 fancy = Fancyline.new
 
@@ -136,11 +138,25 @@ end
 begin # Get rid of stacktrace on ^C
   loop do
     # print prompt
-    input = fancy.readline(prompt.to_s)
+    if more_input
+      input = fancy.readline(" ")
+    else
+      input = fancy.readline(prompt.to_s)
+    end
+
+    more_input = false
 
     if input
       # strip the newline character from input
-      input = input.strip
+      input = last_input + input.strip
+
+      # If the last line of the input is \, stop parsing and wait for additional input
+      if input.ends_with? '\\'
+        input = input.rchop '\\'
+        more_input = true
+        last_input = input
+        next
+      end
 
       commands = split_on_pipes(input)
       pp commands

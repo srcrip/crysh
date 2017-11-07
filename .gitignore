@@ -2,3 +2,5 @@
 /lib/
 /bin/
 /.shards/
+crysh
+history.log

@@ -4,7 +4,15 @@ TODO: Write a description here
 
 ## Installation
 
-TODO: Write installation instructions here
+Crysh currently needs to be built from source. To do that, you must install [Crystal](https://crystal-lang.org/).
+
+1. Clone this repo: `git clone https://github.com/Sevensidedmarble/crysh.git && cd crysh`
+
+2. Install dependencies: `crystal deps`
+
+3. Build: `crystal build src/crysh.cr`
+
+4. Run with `./crysh`
 
 ## Usage
 

@@ -19,9 +19,20 @@ def export(args)
   ENV[key] = value
 end
 
+def grep(args)
+  Process.exec "grep --color=auto " + args
+end
+
+def shell_alias(input)
+  name, command = input.split('=')
+  puts "Made alias " + name + " = " + command if DEBUG
+end
+
 BUILTINS = {
   "cd"     => ->cd (String),
   "exit"   => ->exit (String),
   "exec"   => ->exec (String),
   "export" => ->export (String),
+  "grep"   => ->grep (String),
+  "alias"  => ->shell_alias (String),
 }

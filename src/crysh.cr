@@ -11,7 +11,10 @@ Dir.mkdir "#{ENV["HOME"]}/.config/crysh/" unless Dir.exists? "#{ENV["HOME"]}/.co
 HISTFILE = "#{ENV["HOME"]}/.config/crysh/history.log"
 CONFIG   = "#{ENV["HOME"]}/.config/crysh/config.yml"
 
-DEBUG = true
+DEBUG = false
+
+fancy = get_fancy
+
 # prompt = "❯ ".colorize(:blue)
 prompt = "❯ "
 
@@ -25,7 +28,7 @@ end
 
 # HELPERS
 def expand_vars(input)
-  ENV[input.lchomp('$')] if input =~ /(\\$)(?:[a-z][a-z]+)/
+  ENV[input.lchop('$')] if input =~ /(\\$)(?:[a-z][a-z]+)/
   input.gsub(/(\\$)(?:[a-z][a-z]+)/, "\1")
 end
 
@@ -40,8 +43,11 @@ def spawn_program(program, arguments, placeholder_out, placeholder_in)
       STDIN.reopen(placeholder_in)
       placeholder_in.close
     end
-
-    Process.exec program, arguments
+    begin
+      Process.exec program, arguments
+    rescue err : Errno
+      puts "crysh: unknown command."
+    end
   }
 end
 
@@ -57,67 +63,6 @@ end
 
 def call_builtin(program, arguments)
   BUILTINS[program].call(arguments)
-end
-
-fancy = Fancyline.new
-
-fancy.display.add do |ctx, line, yielder|
-  # We underline command names
-  line = line.gsub(/^\w+/, &.colorize.mode(:underline))
-  line = line.gsub(/(\|\s*)(\w+)/) do
-    "#{$1}#{$2.colorize.mode(:underline)}"
-  end
-
-  # And turn --arguments green
-  line = line.gsub(/--?\w+/, &.colorize(:green))
-
-  # Then we call the next middleware with the modified line
-  yielder.call ctx, line
-end
-
-fancy.actions.set Fancyline::Key::Control::AltH do |ctx|
-  if command = get_command(ctx) # Figure out the current command
-    system("man #{command}")    # And open the man-page of it
-  end
-end
-
-fancy.sub_info.add do |ctx, yielder|
-  lines = yielder.call(ctx) # First run the next part of the middleware chain
-
-  if command = get_command(ctx) # Grab the command
-    help_line = `whatis #{command} 2> /dev/null`.lines.first?
-    lines << help_line if help_line # Display it if we got something
-  end
-
-  lines # Return the lines so far
-end
-
-fancy.autocomplete.add do |ctx, range, word, yielder|
-  completions = yielder.call(ctx, range, word)
-
-  # The `word` may not suffice for us here.  It'd be fine however for command
-  # name completion.
-
-  # Find the range of the current path name near the cursor.
-  prev_char = ctx.editor.line[ctx.editor.cursor - 1]?
-  if !word.empty? || {'/', '.'}.includes?(prev_char)
-    # Then we try to find where it begins and ends
-    arg_begin = ctx.editor.line.rindex(' ', ctx.editor.cursor - 1) || 0
-    arg_end = ctx.editor.line.index(' ', arg_begin + 1) || ctx.editor.line.size
-    range = (arg_begin + 1)...arg_end
-
-    # And using that range we just built, we can find the path the user entered
-    path = ctx.editor.line[range].strip
-  end
-
-  # Find suggestions and append them to the completions array.
-  Dir["#{path}*"].each do |suggestion|
-    base = File.basename(suggestion)
-    suggestion += '/' if Dir.exists? suggestion
-    completions << Fancyline::Completion.new(range, suggestion, base)
-  end
-
-  completions
 end
 
 def get_command(ctx)
@@ -138,7 +83,6 @@ end
 
 begin # Get rid of stacktrace on ^C
   loop do
-    # print prompt
     if more_input
       input = fancy.readline(" ")
     else
@@ -151,6 +95,9 @@ begin # Get rid of stacktrace on ^C
       # strip the newline character from input
       input = last_input + input.strip
 
+      p input
+      # p test = expand_vars input
+
       # If the last line of the input is \, stop parsing and wait for additional input
       if input.ends_with? '\\'
         input = input.rchop '\\'
@@ -160,7 +107,9 @@ begin # Get rid of stacktrace on ^C
       end
 
       commands = split_on_pipes(input)
-      pp commands
+
+      p "Commands: " if DEBUG
+      pp commands if DEBUG
 
       placeholder_in = STDIN
       placeholder_out = STDOUT
@@ -195,16 +144,6 @@ begin # Get rid of stacktrace on ^C
       end
 
       processes.each(&.wait)
-
-      # if BUILTINS.has_key? command.to_s
-      #   BUILTINS[command.to_s].call(args.join)
-      # else
-      #   pid = Process.fork {
-      #     Process.exec line
-      #   }
-
-      #   pid.wait
-      # end
     end
   end
 rescue err : Fancyline::Interrupt

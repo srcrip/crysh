@@ -32,6 +32,11 @@ def get_fancy
     lines # Return the lines so far
   end
 
+  # Unfo Fancyline's default handling of ctrl c
+  fancy.actions.set(Fancyline::Key::Control::CtrlC) do |ctx|
+    ctx.reject! # Reject input, make `Fancyline#readline` return `nil`
+  end
+
   fancy.autocomplete.add do |ctx, range, word, yielder|
     completions = yielder.call(ctx, range, word)
 

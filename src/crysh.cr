@@ -3,6 +3,39 @@ require "./crysh/*"
 require "colorize"
 require "fancyline"
 
+class Jobs
+  MANAGER = new
+
+  def self.manager
+    MANAGER
+  end
+
+  def initialize(@fg : Process? = nil)
+  end
+
+  property fg
+end
+
+# Signal::STOP.trap do |x|
+#   puts "got stop sig"
+# end
+
+# Signal::INT.trap do |x|
+#   if fg = Jobs.manager.fg
+#     fg.kill(Signal::INT)
+#   else
+#     puts "Got SIGINT, but there is no process in the foreground."
+#   end
+# end
+
+Signal::INT.trap do |x|
+  if fg = Jobs.manager.fg
+    fg.kill
+  else
+    puts "Got SIGINT, but there is no process in the foreground."
+  end
+end
+
 # HISTFILE = "#{Dir.current}/history.log"
 
 Dir.mkdir "#{ENV["HOME"]}/.config/" unless Dir.exists? "#{ENV["HOME"]}/.config/"
@@ -81,74 +114,75 @@ if File.exists? HISTFILE # Does it exist?
   end
 end
 
-begin # Get rid of stacktrace on ^C
-  loop do
-    if more_input
-      input = fancy.readline(" ")
-    else
-      input = fancy.readline(prompt.to_s)
-    end
-
-    more_input = false
-
-    if input
-      # strip the newline character from input
-      input = last_input + input.strip
-
-      p input
-      # p test = expand_vars input
-
-      # If the last line of the input is \, stop parsing and wait for additional input
-      if input.ends_with? '\\'
-        input = input.rchop '\\'
-        more_input = true
-        last_input = input
-        next
-      end
-
-      commands = split_on_pipes(input)
-
-      p "Commands: " if DEBUG
-      pp commands if DEBUG
-
-      placeholder_in = STDIN
-      placeholder_out = STDOUT
-      pipe = [] of IO::FileDescriptor
-
-      processes = [] of Process
-
-      commands.each_with_index do |command, index|
-        args = command.to_s.split
-        program = args.shift
-
-        p "Program: " + program if DEBUG
-
-        if builtin? (program.to_s)
-          call_builtin(program.to_s, args.join)
-        else
-          if index + 1 < commands.size
-            pipe = IO.pipe
-            placeholder_out = pipe.last
-          else
-            placeholder_out = STDOUT
-          end
-
-          processes.push spawn_program(program, args, placeholder_out, placeholder_in)
-
-          # p pipe.empty?
-
-          placeholder_out.close unless placeholder_out == STDOUT
-          placeholder_in.close unless placeholder_in == STDIN
-          placeholder_in = pipe.first unless pipe.empty?
-        end
-      end
-
-      processes.each(&.wait)
-    end
+# begin # Get rid of stacktrace on ^C
+loop do
+  if more_input
+    input = fancy.readline(" ")
+  else
+    input = fancy.readline(prompt.to_s)
   end
-rescue err : Fancyline::Interrupt
-  puts "Exited Crysh ok."
+
+  more_input = false
+
+  if input
+    # strip the newline character from input
+    input = last_input + input.strip
+
+    p input
+    # p test = expand_vars input
+
+    # If the last line of the input is \, stop parsing and wait for additional input
+    if input.ends_with? '\\'
+      input = input.rchop '\\'
+      more_input = true
+      last_input = input
+      next
+    end
+
+    commands = split_on_pipes(input)
+
+    p "Commands: " if DEBUG
+    pp commands if DEBUG
+
+    placeholder_in = STDIN
+    placeholder_out = STDOUT
+    pipe = [] of IO::FileDescriptor
+
+    processes = [] of Process
+
+    commands.each_with_index do |command, index|
+      args = command.to_s.split
+      program = args.shift
+
+      p "Program: " + program if DEBUG
+
+      if builtin? (program.to_s)
+        call_builtin(program.to_s, args.join)
+      else
+        if index + 1 < commands.size
+          pipe = IO.pipe
+          placeholder_out = pipe.last
+        else
+          placeholder_out = STDOUT
+        end
+
+        processes.push spawn_program(program, args, placeholder_out, placeholder_in)
+
+        # the fg process is by default the last process, unless something got passsed '&'
+        Jobs.manager.fg = processes.last
+
+        placeholder_out.close unless placeholder_out == STDOUT
+        placeholder_in.close unless placeholder_in == STDIN
+        placeholder_in = pipe.first unless pipe.empty?
+      end
+    end
+
+    processes.each(&.wait)
+  end
 end
+# rescue err : Fancyline::Interrupt
+#   puts "Exited Crysh ok."
+# end
 
 File.open(HISTFILE, "w") do |io| # So open it writable
   fancy.history.save io          # And save.  That's it.

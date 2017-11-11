@@ -36,3 +36,11 @@ BUILTINS = {
   "grep"   => ->grep (String),
   "alias"  => ->shell_alias (String),
 }
+
+def builtin?(program)
+  BUILTINS.has_key?(program)
+end
+
+def call_builtin(program, arguments)
+  BUILTINS[program].call(arguments)
+end

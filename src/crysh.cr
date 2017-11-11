@@ -3,40 +3,28 @@ require "./crysh/*"
 require "colorize"
 require "fancyline"
 
-class Jobs
-  MANAGER = new
+# waitpid uses two option flags, WUNTRACED and WNOHANG, value 2 and 1 respectively. If you want to use them both, combine them with a bitwise OR operator (|)
+WUNTRACED = 2
 
-  def self.manager
-    MANAGER
-  end
-
-  def initialize(@fg : Process? = nil)
-  end
-
-  property fg
+lib LibC
+  # sets current process to its own process group
+  fun setpgrp : Int32
+  # sets process specified by pid to process group specified by pgid
+  fun setpgid(pid : PidT, pgid : PidT) : Int32
 end
 
+first_proc = nil
+
 # Signal::STOP.trap do |x|
-#   puts "got stop sig"
+#   puts "Got SIGSTOP"
+#   # if fg = Jobs.manager.fg
+#   #   fg.kill(Signal::STOP)
+#   # end
 # end
 
 # Signal::INT.trap do |x|
-#   if fg = Jobs.manager.fg
-#     fg.kill(Signal::INT)
-#   else
-#     puts "Got SIGINT, but there is no process in the foreground."
-#   end
+#   puts "Got SIGINT"
 # end
-
-Signal::INT.trap do |x|
-  if fg = Jobs.manager.fg
-    fg.kill
-  else
-    puts "Got SIGINT, but there is no process in the foreground."
-  end
-end
-
-# HISTFILE = "#{Dir.current}/history.log"
 
 Dir.mkdir "#{ENV["HOME"]}/.config/" unless Dir.exists? "#{ENV["HOME"]}/.config/"
 Dir.mkdir "#{ENV["HOME"]}/.config/crysh/" unless Dir.exists? "#{ENV["HOME"]}/.config/crysh/"
@@ -44,8 +32,10 @@ Dir.mkdir "#{ENV["HOME"]}/.config/crysh/" unless Dir.exists? "#{ENV["HOME"]}/.co
 HISTFILE = "#{ENV["HOME"]}/.config/crysh/history.log"
 CONFIG   = "#{ENV["HOME"]}/.config/crysh/config.yml"
 
+# Flag to print some helper notices.
 DEBUG = false
 
+# Fancyline is a really nice crystal library for editing and dealing with text on the command line.
 fancy = get_fancy
 
 # prompt = "❯ ".colorize(:blue)
@@ -55,64 +45,8 @@ prompt = "❯ "
 more_input = false
 last_input = ""
 
-def crysh_prompt
-  puts "❯ "
-end
-
-# HELPERS
-def expand_vars(input)
-  ENV[input.lchop('$')] if input =~ /(\\$)(?:[a-z][a-z]+)/
-  input.gsub(/(\\$)(?:[a-z][a-z]+)/, "\1")
-end
-
-def spawn_program(program, arguments, placeholder_out, placeholder_in)
-  Process.fork {
-    unless placeholder_out == STDOUT
-      STDOUT.reopen(placeholder_out)
-      placeholder_out.close
-    end
-
-    unless placeholder_in == STDIN
-      STDIN.reopen(placeholder_in)
-      placeholder_in.close
-    end
-    begin
-      Process.exec program, arguments
-    rescue err : Errno
-      puts "crysh: unknown command."
-    end
-  }
-end
-
-def split_on_pipes(line)
-  # line.match(/([^"'|]+)|["']([^"']+)["']/).flatten.compact
-  # line.scan(/([^"'|]+)|["']([^"']+)["']/)
-  line.split('|')
-end
-
-def builtin?(program)
-  BUILTINS.has_key?(program)
-end
-
-def call_builtin(program, arguments)
-  BUILTINS[program].call(arguments)
-end
-
-def get_command(ctx)
-  line = ctx.editor.line
-  cursor = ctx.editor.cursor.clamp(0, line.size - 1)
-  pipe = line.rindex('|', cursor)
-  line = line[(pipe + 1)..-1] if pipe
-
-  line.split.first?
-end
-
-if File.exists? HISTFILE # Does it exist?
-  puts "Reading history from #{HISTFILE}" if DEBUG
-  File.open(HISTFILE, "r") do |io| # Open a handle
-    fancy.history.load io          # And load it
-  end
-end
+# open the history file (or make it if it exists) and load it for use
+load_history(fancy)
 
 # begin # Get rid of stacktrace on ^C
 loop do
@@ -150,6 +84,8 @@ loop do
 
     processes = [] of Process
 
+    current_job = Jobs.manager.add(Job.new)
+
     commands.each_with_index do |command, index|
       args = command.to_s.split
       program = args.shift
@@ -166,10 +102,17 @@ loop do
           placeholder_out = STDOUT
         end
 
-        processes.push spawn_program(program, args, placeholder_out, placeholder_in)
+        processes.push spawn_program(program, args, placeholder_out, placeholder_in, first_proc)
 
-        # the fg process is by default the last process, unless something got passsed '&'
-        Jobs.manager.fg = processes.last
+        pp first_proc
+        # # if this command is first in the job, set a flag that will later determine the process group id of the job
+        # if !first_proc
+        #   first_proc = processes.last
+        # end
+
+        # put this process in the fg of the shell, unless passed '&'
+        Jobs.manager.fg = current_job
+        # Jobs.manager.fg = processes.last
 
         placeholder_out.close unless placeholder_out == STDOUT
         placeholder_in.close unless placeholder_in == STDIN
@@ -177,13 +120,20 @@ loop do
       end
     end
 
-    processes.each(&.wait)
+    processes.each do |p|
+      # ret = p.wait
+      # pp ret
+
+      LibC.waitpid(p.pid, out status_ptr, WUNTRACED)
+      pp status_ptr
+    end
   end
 end
 # rescue err : Fancyline::Interrupt
 #   puts "Exited Crysh ok."
 # end
 
-File.open(HISTFILE, "w") do |io| # So open it writable
-  fancy.history.save io          # And save.  That's it.
-end
+# save all the history from this session.
+save_history(fancy)
+
+# sleep 5 | sleep 10 | sleep 15 | ps -o pid,pgid,ppid,args

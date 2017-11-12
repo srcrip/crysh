@@ -42,10 +42,17 @@ DEBUG = false
 # sleep 5 | sleep 10 | sleep 15 | ps -o pid,pgid,ppid,args
 
 module Crysh
+  struct Prompt
+    property normal, continued, string
+
+    def initialize(@normal : String, @continued : String, @string : String)
+    end
+  end
+
   class CLI
     property fancy : Fancyline
 
-    def initialize(@prompt : String)
+    def initialize(@prompt : Prompt)
       @fancy = get_fancy
     end
 
@@ -79,10 +86,11 @@ module Crysh
     # Collect a single line of input. A line can be continued by escaping the
     # newline with \.
     def collect_input
-      input = @fancy.readline(@prompt)
+      input = @fancy.readline(@prompt.normal)
+      # TODO detect unclosed quotations
       while !input.nil? && input.ends_with? '\\'
         input = input.rchop '\\'
-        input += " " + (@fancy.readline("| ") || "")
+        input += " " + (@fancy.readline(@prompt.continued) || "")
       end
       input
     end
@@ -90,5 +98,6 @@ module Crysh
 end
 
 # prompt = "❯ ".colorize(:blue)
-prompt = "❯ "
+# prompt = "❯ "
+prompt = Crysh::Prompt.new("❯ ", "| ", "\" ")
 Crysh::CLI.new(prompt).run

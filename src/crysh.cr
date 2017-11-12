@@ -1,6 +1,5 @@
 # coding: utf-8
 require "./crysh/*"
-require "option_parser"
 require "colorize"
 require "fancyline"
 
@@ -18,29 +17,8 @@ crystal version: #{Crystal::VERSION}
 ♥ thank you for using crysh ♥
 "
 
-# Parse options and flags on startup.
-OptionParser.parse! do |parser|
-  parser.banner = "crysh: the crystal shell"
-  parser.on("-c", "--command=COMMANDS", "Evaluate the specified commands and exit instead of entering interactive mode.") do |cmd|
-    set_interactive false
-    puts cmd
-    # TODO implement command mode
-  end
-  parser.on("-d", "--debug", "Turns debug on mode for developers.") do
-    set_debug
-  end
-  parser.on("-v", "--version", "Display version information and exit.") do
-    puts VERSION
-    exit 0
-  end
-  parser.on("-h", "--help", "Display this help message and exit.") do
-    puts parser
-    exit 0
-  end
-end
-
-# Exit if the user passed -c
-exit 0 unless interactive?
+# The startup method parses arguments the user passed in from command line.
+startup
 
 # waitpid uses two option flags, WUNTRACED and WNOHANG, value 2 and 1 respectively. If you want to use them both, combine them with a bitwise OR operator (|)
 WUNTRACED = 2

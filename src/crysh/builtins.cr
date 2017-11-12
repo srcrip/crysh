@@ -1,3 +1,5 @@
+# TODO many builtins need to be added. Look at what bash/zsh/fish implement and go from there.
+
 def cd(dir)
   Dir.cd(dir)
 end

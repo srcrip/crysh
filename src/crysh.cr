@@ -38,66 +38,57 @@ CONFIG   = "#{ENV["HOME"]}/.config/crysh/config.yml"
 # Flag to print some helper notices.
 DEBUG = false
 
-# Fancyline is a really nice crystal library for editing and dealing with text on the command line.
-fancy = get_fancy
+# some commands I've used to test process groups in crysh:
+# sleep 5 | sleep 10 | sleep 15 | ps -o pid,pgid,ppid,args
 
-# prompt = "❯ ".colorize(:blue)
-prompt = "❯ "
+module Crysh
+  class CLI
+    property fancy : Fancyline
 
-# this is a flag to check for additional input after the \ char
-more_input = false
-last_input = ""
-
-# open the history file (or make it if it exists) and load it for use
-load_history(fancy)
-
-# begin # Get rid of stacktrace on ^C
-loop do
-  if more_input
-    input = fancy.readline(" ")
-  else
-    input = fancy.readline(prompt.to_s)
-  end
-
-  more_input = false
-
-  if input
-    # strip the newline character from input
-    input = last_input + input.strip
-
-    # If the last line of the input is \, stop parsing and wait for additional input
-    if input.ends_with? '\\'
-      input = input.rchop '\\'
-      more_input = true
-      last_input = input
-      next
+    def initialize(@prompt : String)
+      @fancy = get_fancy
     end
 
-    commands = split_on_pipes(input)
+    def run
+      loop do
 
-    # TODO instead of making the job and then iterating commands and adding to job one at a time, just pass the commands array to the initializer of jobs.
-    current_job = Jobs.manager.add(Job.new)
+        # Collect the input string and split it into a list of separate commands
+        # to be piped into each other.
+        input = collect_input
+        next if input.nil?
+        break if input == "exit" # TODO make this graceful exit not a hack
+        commands = split_on_pipes(input)
 
-    # TODO add bg and fg support to jobs, then make appending a command with '&' spawn a process in the bg.
-    commands.each_with_index do |command, index|
-      current_job.add_command(command, index)
+        # Add the gathered commands into a job
+        job = Jobs.manager.add(Job.new)
+        commands.each_with_index do |command, index|
+          job.add_command(command, index)
+        end
+
+        # Wait for the whole job to finish before completing the loop
+        job.processes.each do |proc|
+          LibC.waitpid(proc.pid, out status_ptr, WUNTRACED)
+          pp status_ptr if DEBUG
+        end
+      end
+
+      # save all the history from this session.
+      save_history(@fancy)
     end
 
-    current_job.processes.each do |p|
-      # I changed this from wait to waitpid, but I'm still experimenting.
-      # ret = p.wait
-      # pp ret
-      LibC.waitpid(p.pid, out status_ptr, WUNTRACED)
-      pp status_ptr if DEBUG
+    # Collect a single line of input. A line can be continued by escaping the
+    # newline with \.
+    def collect_input
+      input = @fancy.readline(@prompt)
+      while !input.nil? && input.ends_with? '\\'
+        input = input.rchop '\\'
+        input += " " + (@fancy.readline("| ") || "")
+      end
+      input
     end
   end
 end
-# rescue err : Fancyline::Interrupt
-#   puts "Exited Crysh ok."
-# end
 
-# save all the history from this session.
-save_history(fancy)
-
-# some commands I've used to test process groups in crysh:
-# sleep 5 | sleep 10 | sleep 15 | ps -o pid,pgid,ppid,args
+# prompt = "❯ ".colorize(:blue)
+prompt = "❯ "
+Crysh::CLI.new(prompt).run

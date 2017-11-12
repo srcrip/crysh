@@ -8,15 +8,29 @@ Crysh currently needs to be built from source. To do that, you must install [Cry
 
 1. Clone this repo: `git clone https://github.com/Sevensidedmarble/crysh.git && cd crysh`
 
-2. Install dependencies: `crystal deps`
+2. Install dependencies: `crystal deps install` or `shards install` if you have shards on your path.
 
-3. Build: `crystal build src/crysh.cr`
+3. Build: `crystal build src/crysh.cr --release`. Note that crysh is pretty fast without the release flag too, so you can run `crystal build src/crysh.cr` if you're having trouble getting it to compile with the release flag.
 
-4. Run with `./crysh`
+4. You can run crysh right from this directory with `./crysh`
+
+5. You can now symlink to your bin folder (make sure /usr/local/bin is on your path, or use /usr/bin):
+
+* In bash/zsh: `sudo ln -sf $(pwd)/crysh /usr/local/bin/crysh`
+
+* In fish: `sudo ln -sf (pwd)/crysh /usr/local/bin/crysh`
+
+6. You can then set your shell with `chsh`. Be cautious with this while crysh is still alpha software:
+
+* In bash/zsh: `chsh -s $(which crysh)`
+
+* In fish: `chsh -s (which crysh)`
+
+Do not accidentally run `chsh` with sudo or as root, as you'll change the root shell instead!
 
 ## Usage
 
-Build the program from source, then run it. Crysh can be used like any other unix shell.
+Follow the instructions above. Crysh can be used like any other unix shell. It does not aim to be 100% POSIX complete, but it should be as POSIX complete as fish when 1.0 is released.
 
 ## Development
 
@@ -34,5 +48,5 @@ I've collected some very helpful resources about programming shells in the wiki,
 
 ## Contributors
 
-- [sevensidedmarble](https://github.com/sevensidedmarble) - creator, maintainer
-- [Jacob Evan Shreve](https://github.com/shreve) - not the creator, kinda maintainer
+- [sevensidedmarble](https://github.com/sevensidedmarble)
+- [Jacob Evan Shreve](https://github.com/shreve)

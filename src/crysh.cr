@@ -3,6 +3,7 @@ require "./crysh/*"
 require "colorize"
 require "fancyline"
 
+# TODO support piping to positional arguments of commands like $(pwd) works in bash or (pwd) in fish. I think we should support both syntaxes for maximum compatability and ease of use at the same time.
 # TODO right now theres an error when piping between builtins and non builtins.
 # TODO add vim and emacs modes to fancyline.
 # TODO the whole more_input and last_input thing is ugly as sin and should probably be just some array called lines.

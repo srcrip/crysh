@@ -3,6 +3,11 @@ require "./crysh/*"
 require "colorize"
 require "fancyline"
 
+# TODO right now theres an error when piping between builtins and non builtins.
+# TODO add vim and emacs modes to fancyline.
+# TODO the whole more_input and last_input thing is ugly as sin and should probably be just some array called lines.
+# TODO fix stacktrace when using exit command.
+
 # waitpid uses two option flags, WUNTRACED and WNOHANG, value 2 and 1 respectively. If you want to use them both, combine them with a bitwise OR operator (|)
 WUNTRACED = 2
 
@@ -62,9 +67,6 @@ loop do
     # strip the newline character from input
     input = last_input + input.strip
 
-    p input
-    # p test = expand_vars input
-
     # If the last line of the input is \, stop parsing and wait for additional input
     if input.ends_with? '\\'
       input = input.rchop '\\'
@@ -82,50 +84,20 @@ loop do
     placeholder_out = STDOUT
     pipe = [] of IO::FileDescriptor
 
-    processes = [] of Process
-
+    # TODO instead of making the job and then iterating commands and adding to job one at a time, just pass the commands array to the initializer of jobs.
     current_job = Jobs.manager.add(Job.new)
 
+    # TODO add bg and fg support to jobs, then make appending a command with '&' spawn a process in the bg.
     commands.each_with_index do |command, index|
-      args = command.to_s.split
-      program = args.shift
-
-      p "Program: " + program if DEBUG
-
-      if builtin? (program.to_s)
-        call_builtin(program.to_s, args.join)
-      else
-        if index + 1 < commands.size
-          pipe = IO.pipe
-          placeholder_out = pipe.last
-        else
-          placeholder_out = STDOUT
-        end
-
-        processes.push spawn_program(program, args, placeholder_out, placeholder_in, first_proc)
-
-        pp first_proc
-        # # if this command is first in the job, set a flag that will later determine the process group id of the job
-        # if !first_proc
-        #   first_proc = processes.last
-        # end
-
-        # put this process in the fg of the shell, unless passed '&'
-        Jobs.manager.fg = current_job
-        # Jobs.manager.fg = processes.last
-
-        placeholder_out.close unless placeholder_out == STDOUT
-        placeholder_in.close unless placeholder_in == STDIN
-        placeholder_in = pipe.first unless pipe.empty?
-      end
+      current_job.add_command(command, index)
     end
 
-    processes.each do |p|
+    current_job.processes.each do |p|
+      # I changed this from wait to waitpid, but I'm still experimenting.
       # ret = p.wait
       # pp ret
-
       LibC.waitpid(p.pid, out status_ptr, WUNTRACED)
-      pp status_ptr
+      pp status_ptr if DEBUG
     end
   end
 end
@@ -136,4 +108,5 @@ end
 # save all the history from this session.
 save_history(fancy)
 
+# some commands I've used to test process groups in crysh:
 # sleep 5 | sleep 10 | sleep 15 | ps -o pid,pgid,ppid,args

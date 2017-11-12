@@ -1,4 +1,5 @@
 # This is a manager/singleton to hold jobs.
+# TODO add bg, and actual bg/fg handling.
 class Jobs
   @fg : Job?
 

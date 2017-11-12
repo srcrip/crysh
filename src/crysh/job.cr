@@ -10,26 +10,42 @@ class Job
     @commands = [] of String
     # And then they get turned into actual processes bound together by pipes.
     @processes = [] of Process
-    # TODO docs and fix HACK
-    # @placeholder_in : IO::FileDescriptor = STDIN
-    # @placeholder_out : IO::FileDescriptor = STDOUT
-    # @pipe = [] of IO::FileDescriptor
   end
 
   # Add a command to this job.
-  def add_command(c : String)
+  def add_command(c : String, index : Int32)
     # c here is raw input, the args have not yet been seperated.
     @commands.push c
     # split makes an array delimited by " ".
-    args = command.to_s.split
+    args = c.to_s.split
     # And then we shift the first element off, which represents the program to execute, removing it from args.
     program = args.shift
     # make sure program is a string.
     program = program.to_s
-    # and make sure args is a string.
-    args = args.join
-    # now we can attempt to spawn the process.
-    @processes.push (spawn_process(program, args))
+    p "Program: " + program if DEBUG
+
+    if builtin? (program)
+      # currently builtins except strings as args so we need to call args.join. TODO perhaps change this.
+      call_builtin(program, args.join)
+    else
+      # First we need to set the placeholder file descriptors to some initial values
+      if index + 1 < @commands.size
+        @pipe = IO.pipe.to_a
+        @placeholder_out = @pipe.last
+      else
+        @placeholder_out = STDOUT
+      end
+
+      # now we can attempt to spawn the process.
+      @processes.push (spawn_process(program, args))
+      p "Process:" if DEBUG
+      pp @processes.last if DEBUG
+
+      # Do some final cleaning up and closing of the FDs we had to open. Broken pipes are bad.
+      @placeholder_out.close unless @placeholder_out == STDOUT
+      @placeholder_in.close unless @placeholder_in == STDIN
+      @placeholder_in = @pipe.first unless @pipe.empty?
+    end
   end
 
   # Spawn/Exec a process in this job.
@@ -37,13 +53,14 @@ class Job
     Process.fork {
       # if this is the first process in the job, its will make a new process group with its pid as the pgid.
       # this is very important as we will later tell the kernel that this process group needs to receive signals.
-      if @processes.count == 0
-        LibC.setpgrp
-        # set @pgid so we can set all the other processes in this job to use it as their pgid
-        @pgid = Process.pid
-      else # every other process needs to be in process group @pgid
-        LibC.setpgid(Process.pid, @pgid)
-      end
+      # Will uncomment out soon. Job rewrite more important.
+      # if @processes.size == 0
+      #   LibC.setpgrp
+      #   # set @pgid so we can set all the other processes in this job to use it as their pgid
+      #   @pgid = Process.pid
+      # else # every other process needs to be in process group @pgid
+      #   LibC.setpgid(Process.pid, @pgid)
+      # end
 
       unless @placeholder_out == STDOUT
         STDOUT.reopen(@placeholder_out)

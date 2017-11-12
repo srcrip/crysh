@@ -1,5 +1,6 @@
 # coding: utf-8
 require "./crysh/*"
+require "option_parser"
 require "colorize"
 require "fancyline"
 
@@ -7,6 +8,41 @@ require "fancyline"
 # TODO add vim and emacs modes to fancyline.
 # TODO the whole more_input and last_input thing is ugly as sin and should probably be just some array called lines.
 # TODO fix stacktrace when using exit command.
+# TODO indent to level of previous prompt when waiting for additional input
+
+# By default, crysh starts in interactive mode. Pass -c to force command mode.
+interactive = true
+# By default, crysh starts with debug off. Pass -d to force debug mode on.
+debug = false
+# Version information
+VERSION = "crysh: version 0.1.0
+crystal version: #{Crystal::VERSION}
+♥ thank you for using crysh ♥
+"
+
+# Parse options and flags on startup.
+OptionParser.parse! do |parser|
+  parser.banner = "crysh: the crystal shell"
+  parser.on("-c", "--command=COMMANDS", "Evaluate the specified commands and exit instead of entering interactive mode.") do |cmd|
+    interactive = false
+    puts cmd
+    # TODO implement command mode
+  end
+  parser.on("-d", "--debug", "Turns debug on mode for developers.") do
+    debug = true
+ end
+  parser.on("-v", "--version", "Display version information and exit.") do
+    puts VERSION
+    exit 0
+  end
+  parser.on("-h", "--help", "Display this help message and exit.") do
+    puts parser
+    exit 0
+  end
+end
+
+# Exit if the user passed -c
+exit 0 unless interactive
 
 # waitpid uses two option flags, WUNTRACED and WNOHANG, value 2 and 1 respectively. If you want to use them both, combine them with a bitwise OR operator (|)
 WUNTRACED = 2

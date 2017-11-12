@@ -2,7 +2,8 @@ def cd(dir)
   Dir.cd(dir)
 end
 
-def exit(code)
+# never rename this to exit as crystal has that function in the global namespace
+def crysh_exit(code)
   if code.empty?
     Process.exit
   else
@@ -31,7 +32,7 @@ end
 BUILTINS = {
   "cd"     => ->cd (String),
   "exit"   => ->exit (String),
-  "exec"   => ->exec (String),
+  "exec"   => ->crysh_exit (String),
   "export" => ->export (String),
   "grep"   => ->grep (String),
   "alias"  => ->shell_alias (String),

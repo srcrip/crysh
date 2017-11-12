@@ -1,0 +1,1 @@
+Each installed theme should have a directory here.

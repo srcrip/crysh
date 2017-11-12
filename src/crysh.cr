@@ -18,8 +18,6 @@ lib LibC
   fun setpgid(pid : PidT, pgid : PidT) : Int32
 end
 
-first_proc = nil
-
 # Signal::STOP.trap do |x|
 #   puts "Got SIGSTOP"
 #   # if fg = Jobs.manager.fg
@@ -76,13 +74,6 @@ loop do
     end
 
     commands = split_on_pipes(input)
-
-    p "Commands: " if DEBUG
-    pp commands if DEBUG
-
-    placeholder_in = STDIN
-    placeholder_out = STDOUT
-    pipe = [] of IO::FileDescriptor
 
     # TODO instead of making the job and then iterating commands and adding to job one at a time, just pass the commands array to the initializer of jobs.
     current_job = Jobs.manager.add(Job.new)

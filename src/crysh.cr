@@ -30,7 +30,7 @@ OptionParser.parse! do |parser|
   end
   parser.on("-d", "--debug", "Turns debug on mode for developers.") do
     debug = true
- end
+  end
   parser.on("-v", "--version", "Display version information and exit.") do
     puts VERSION
     exit 0

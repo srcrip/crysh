@@ -20,7 +20,9 @@ Build the program from source, then run it. Crysh can be used like any other uni
 
 ## Development
 
-TODO: Write development instructions here
+Some planned changes are noted in the source code via TODO comments. Feel free to open a pull request or issue if you have an idea.
+
+I've collected some very helpful resources about programming shells in the wiki, [available here.](https://github.com/Sevensidedmarble/crysh/wiki/Important-Links-for-Making-Shells)
 
 ## Contributing
 

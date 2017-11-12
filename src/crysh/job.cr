@@ -22,7 +22,7 @@ class Job
     program = args.shift
     # make sure program is a string.
     program = program.to_s
-    p "Program: " + program if debug
+    p "Program: " + program if debug?
 
     if builtin? (program)
       # currently builtins except strings as args so we need to call args.join. TODO perhaps change this.
@@ -38,8 +38,8 @@ class Job
 
       # now we can attempt to spawn the process.
       @processes.push (spawn_process(program, args))
-      p "Process:" if debug
-      pp @processes.last if debug
+      p "Process:" if debug?
+      pp @processes.last if debug?
 
       # Do some final cleaning up and closing of the FDs we had to open. Broken pipes are bad.
       @placeholder_out.close unless @placeholder_out == STDOUT

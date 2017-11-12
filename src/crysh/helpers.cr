@@ -1,7 +1,7 @@
 # HELPERS
 def load_history(fancy)
   if File.exists? HISTFILE # Does it exist?
-    puts "Reading history from #{HISTFILE}" if debug
+    puts "Reading history from #{HISTFILE}" if debug?
     File.open(HISTFILE, "r") do |io| # Open the file.
       fancy.history.load io          # And load it into fancyline.
     end

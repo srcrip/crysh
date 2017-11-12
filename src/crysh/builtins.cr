@@ -26,13 +26,13 @@ end
 
 def shell_alias(input)
   name, command = input.split('=')
-  puts "Made alias " + name + " = " + command if DEBUG
+  puts "Made alias " + name + " = " + command if debug?
 end
 
 BUILTINS = {
   "cd"     => ->cd (String),
-  "exit"   => ->exit (String),
-  "exec"   => ->crysh_exit (String),
+  "exit"   => ->crysh_exit (String),
+  "exec"   => ->exec (String),
   "export" => ->export (String),
   "grep"   => ->grep (String),
   "alias"  => ->shell_alias (String),

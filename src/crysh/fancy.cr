@@ -65,5 +65,6 @@ def get_fancy
     completions
   end
 
+  load_history(fancy)
   return fancy
 end

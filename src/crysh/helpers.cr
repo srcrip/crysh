@@ -14,15 +14,6 @@ def save_history(fancy)
   end
 end
 
-def expand_vars(input)
-  ENV[input.lchop('$')] if input =~ /(\\$)(?:[a-z][a-z]+)/
-  input.gsub(/(\\$)(?:[a-z][a-z]+)/, "\1")
-end
-
-def expand_tilde
-  # TODO implement. expands things like ~/.config to $HOME/.config.
-end
-
 def spawn_program(program, arguments, placeholder_out, placeholder_in, first_proc)
   Process.fork {
     # if this is the first process in the job, its pid is the process group id

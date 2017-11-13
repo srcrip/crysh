@@ -73,6 +73,8 @@ module Crysh
         input = collect_input
         next if input.nil?
         break if input == "exit" # TODO make this graceful exit not a hack
+        # Expand things like $vars or the $() syntax before proceeding
+        input = expand input
         commands = split_on_pipes(input)
 
         # Add the gathered commands into a job

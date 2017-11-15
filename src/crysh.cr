@@ -108,7 +108,5 @@ module Crysh
   end
 end
 
-# prompt = "❯ ".colorize(:blue)
-# prompt = "❯ "
-prompt = Crysh::Prompt.new("❯ ", "| ", "\" ")
+prompt = Crysh::Prompt.new("❯ ".colorize(:blue).to_s, "| ", "\" ")
 Crysh::CLI.new(prompt).run

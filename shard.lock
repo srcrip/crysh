@@ -2,9 +2,9 @@ version: 1.0
 shards:
   cute:
     github: Papierkorb/cute
-    version: 0.3.0
+    version: 0.3.1
 
   fancyline:
     github: Papierkorb/fancyline
-    version: 0.1
+    commit: abf0c95f44e83cb11b4e39239db8eaa7bbb92e5f
 

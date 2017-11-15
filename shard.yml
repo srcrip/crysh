@@ -4,6 +4,7 @@ version: 0.1.0
 dependencies:
   fancyline:
     github: Papierkorb/fancyline
+    branch: master
 
 authors:
   - sevensidedmarble <andrewianstewart@gmail.com>

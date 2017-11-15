@@ -1,5 +1,17 @@
 # TODO many builtins need to be added. Look at what bash/zsh/fish implement and go from there.
 
+def ls(string)
+  # args = [] of String?
+  # args << "ls"
+  # args << " --color=auto "
+  # # args << string
+  # args << nil
+  # pp args
+  # Process.exec "ls", args
+  # LibC.execvp("ls", ["ls", "-l"])
+  Process.run("ls", ["-l"], output: true, error: true)
+end
+
 def cd(dir)
   Dir.cd(dir)
 end
@@ -32,6 +44,7 @@ def shell_alias(input)
 end
 
 BUILTINS = {
+  "ls"     => ->ls (String),
   "cd"     => ->cd (String),
   "exit"   => ->crysh_exit (String),
   "exec"   => ->exec (String),

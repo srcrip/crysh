@@ -2,6 +2,7 @@
 require "./crysh/*"
 require "colorize"
 require "fancyline"
+include Options
 
 # TODO support piping to positional arguments of commands like $(pwd) works in bash or (pwd) in fish. I think we should support both syntaxes for maximum compatability and ease of use at the same time.
 # TODO right now theres an error when piping between builtins and non builtins.
@@ -9,8 +10,6 @@ require "fancyline"
 # TODO the whole more_input and last_input thing is ugly as sin and should probably be just some array called lines.
 # TODO fix stacktrace when using exit command.
 # TODO indent to level of previous prompt when waiting for additional input
-
-include Options
 
 # Version information
 VERSION = "crysh: version 0.1.0
@@ -108,5 +107,11 @@ module Crysh
   end
 end
 
-prompt = Crysh::Prompt.new("❯ ".colorize(:blue).to_s, "| ", "\" ")
+dir = Dir.current.colorize(:red).to_s
+user = ENV["USER"].colorize(:yellow).to_s
+hostname = System.hostname.colorize(:green).to_s
+prompt_line = "❯ ".colorize(:blue).to_s
+prompt_string = "\r\n" + user + " at " + hostname + " in " + dir + "\r\n" + prompt_line
+
+prompt = Crysh::Prompt.new(prompt_string, "| ", "\" ")
 Crysh::CLI.new(prompt).run

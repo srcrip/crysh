@@ -21,16 +21,16 @@ def get_fancy
     end
   end
 
-  fancy.sub_info.add do |ctx, yielder|
-    lines = yielder.call(ctx) # First run the next part of the middleware chain
+  # fancy.sub_info.add do |ctx, yielder|
+  #   lines = yielder.call(ctx) # First run the next part of the middleware chain
 
-    if command = get_command(ctx) # Grab the command
-      help_line = `whatis #{command} 2> /dev/null`.lines.first?
-      lines << help_line if help_line # Display it if we got something
-    end
+  #   if command = get_command(ctx) # Grab the command
+  #     help_line = `whatis #{command} 2> /dev/null`.lines.first?
+  #     lines << help_line if help_line # Display it if we got something
+  #   end
 
-    lines # Return the lines so far
-  end
+  #   lines # Return the lines so far
+  # end
 
   # Unfo Fancyline's default handling of ctrl c
   fancy.actions.set(Fancyline::Key::Control::CtrlC) do |ctx|

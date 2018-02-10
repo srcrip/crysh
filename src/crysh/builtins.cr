@@ -9,7 +9,7 @@ def ls(string)
   # pp args
   # Process.exec "ls", args
   # LibC.execvp("ls", ["ls", "-l"])
-  Process.run("ls", ["-l"], output: true, error: true)
+  Process.run("ls", ["-l", "--color=auto"], output: true, error: true)
 end
 
 def cd(dir)

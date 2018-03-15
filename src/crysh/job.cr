@@ -72,7 +72,7 @@ class Job
         @placeholder_in.close
       end
 
-      # Try to exec the command. This mutates the crystal process that we'e forked into whatever command is.
+      # Try to exec the command. This mutates this crystal process that we'e forked into whatever command is.
       begin
         Process.exec command, arguments
       rescue err : Errno

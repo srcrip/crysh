@@ -1,4 +1,3 @@
-# coding: utf-8
 require "./crysh/*"
 require "colorize"
 require "fancyline"
@@ -12,7 +11,7 @@ include Options
 # TODO indent to level of previous prompt when waiting for additional input
 
 # Version information
-VERSION = "crysh: version 0.1.0
+VERSION = "crysh: version 0.1.1
 crystal version: #{Crystal::VERSION}
 ♥ thank you for using crysh ♥
 "

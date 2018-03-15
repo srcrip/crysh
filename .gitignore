@@ -1,9 +1,0 @@
-/doc/
-/lib/
-/bin/
-/.shards/
-crysh
-history.log
-*.sublime-workspace
-*.sublime-project
-src/test\.txt

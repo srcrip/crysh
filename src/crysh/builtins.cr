@@ -1,15 +1,7 @@
 # TODO many builtins need to be added. Look at what bash/zsh/fish implement and go from there.
 
 def ls(string)
-  # args = [] of String?
-  # args << "ls"
-  # args << " --color=auto "
-  # # args << string
-  # args << nil
-  # pp args
-  # Process.exec "ls", args
-  # LibC.execvp("ls", ["ls", "-l"])
-  Process.run("ls", ["-l", "--color=auto"], output: Process::Redirect::Pipe, error: Process::Redirect::Pipe)
+  Process.run("ls", ["-l", "--color=auto"], output: Process::Redirect::Inherit, error: Process::Redirect::Inherit)
 end
 
 def cd(dir)
@@ -17,7 +9,7 @@ def cd(dir)
 end
 
 # don't rename this to `exit` as that's in the global namespace.
-def crysh_exit(code)
+def exit_shell(code)
   if code.empty?
     Process.exit
   else
@@ -46,7 +38,7 @@ end
 BUILTINS = {
   "ls"     => ->ls(String),
   "cd"     => ->cd(String),
-  "exit"   => ->crysh_exit(String),
+  "exit"   => ->exit_shell(String),
   "exec"   => ->execute(String),
   "export" => ->export(String),
   "grep"   => ->grep(String),

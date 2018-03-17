@@ -54,7 +54,11 @@ module Crysh
   struct Prompt
     property normal, continued, string
 
-    def initialize(@normal : String, @continued : String, @string : String)
+    def initialize(@normal : Proc(String), @continued : String, @string : String)
+    end
+
+    def normal
+      @normal.call
     end
   end
 
@@ -107,11 +111,5 @@ module Crysh
   end
 end
 
-dir = Dir.current.colorize(:red).to_s
-user = ENV["USER"].colorize(:yellow).to_s
-hostname = System.hostname.colorize(:green).to_s
-prompt_line = "❯ ".colorize(:blue).to_s
-prompt_string = "\r\n" + user + " at " + hostname + " in " + dir + "\r\n" + prompt_line
-
-prompt = Crysh::Prompt.new(prompt_string, "| ", "\" ")
+prompt = Crysh::Prompt.new(->{ crysh_prompt }, "| ", "\" ")
 Crysh::CLI.new(prompt).run

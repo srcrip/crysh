@@ -1,4 +1,5 @@
 require "./crysh/*"
+require "./crysh/builtins/*"
 require "colorize"
 require "fancyline"
 include Options

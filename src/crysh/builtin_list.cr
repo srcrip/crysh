@@ -1,18 +1,22 @@
-BUILTINS = {
-  "ls"     => ->ls(String),
-  "cd"     => ->cd(String),
-  "exit"   => ->exit_shell(String),
-  "quit"   => ->exit_shell(String),
-  "exec"   => ->execute(String),
-  "export" => ->export(String),
-  "grep"   => ->grep(String),
-  "alias"  => ->shell_alias(String),
-}
+module Builtin
+  extend self
 
-def builtin?(program)
-  BUILTINS.has_key?(program)
-end
+  LIST = {
+    "ls"     => ->ls(String),
+    "cd"     => ->cd(String),
+    "exit"   => ->exit_shell(String),
+    "quit"   => ->exit_shell(String),
+    "exec"   => ->execute(String),
+    "export" => ->export(String),
+    "grep"   => ->grep(String),
+    "alias"  => ->shell_alias(String),
+  }
 
-def call_builtin(program, arguments)
-  BUILTINS[program].call(arguments)
+  def builtin?(program)
+    LIST.has_key?(program)
+  end
+
+  def call_builtin(program, arguments)
+    LIST[program].call(arguments)
+  end
 end

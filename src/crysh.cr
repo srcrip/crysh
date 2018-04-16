@@ -111,5 +111,5 @@ module Crysh
   end
 end
 
-prompt = Crysh::Prompt.new(->{ crysh_prompt }, "| ", "\" ")
+prompt = Crysh::Prompt.new(->{ Functions.crysh_prompt }, "| ", "\" ")
 Crysh::CLI.new(prompt).run

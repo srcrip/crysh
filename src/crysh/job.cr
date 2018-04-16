@@ -24,9 +24,9 @@ class Job
     program = program.to_s
     p "Program: " + program if debug?
 
-    if builtin? (program)
-      # currently builtins except strings as args so we need to call args.join. TODO perhaps change this.
-      call_builtin(program, args.join)
+    if Builtin.builtin? (program)
+      # currently builtins accept strings as args so we need to call args.join. TODO perhaps change this.
+      Builtin.call_builtin(program, args.join)
     else
       # First we need to set the placeholder file descriptors to some initial values
       if index + 1 < @commands.size
@@ -72,13 +72,13 @@ class Job
         @placeholder_in.close
       end
 
-      # Try to exec the command. This mutates this crystal process that we'e forked into whatever command is.
+      # Try to exec the command. This mutates this crystal process that we've forked into whatever command is.
       begin
         Process.exec command, arguments
       rescue err : Errno
         # Display a notice if executing the command failed.
         puts "crysh: unknown command."
-      # TODO: there could be other reasons that exec fails, they might need to return more info to the user.
+        # TODO: there could be other reasons that exec fails, they might need to return more info to the user.
       end
     }
   end

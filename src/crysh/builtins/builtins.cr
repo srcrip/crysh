@@ -7,12 +7,8 @@ def cd(dir)
 end
 
 # don't rename this to `exit` as that's in the global namespace.
-def exit_shell(code)
-  if code.empty?
-    Process.exit
-  else
-    Process.exit(code.to_i)
-  end
+def exit_shell(code = 0)
+  exit code.to_i
 end
 
 def grep(args)

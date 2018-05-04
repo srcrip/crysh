@@ -7,8 +7,6 @@ include Options
 # TODO support piping to positional arguments of commands like $(pwd) works in bash or (pwd) in fish. I think we should support both syntaxes for maximum compatability and ease of use at the same time.
 # TODO right now theres an error when piping between builtins and non builtins.
 # TODO add vim and emacs modes to fancyline.
-# TODO the whole more_input and last_input thing is ugly as sin and should probably be just some array called lines.
-# TODO fix stacktrace when using exit command.
 # TODO indent to level of previous prompt when waiting for additional input
 
 # The startup method parses arguments the user passed in from command line.

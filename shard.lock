@@ -1,4 +1,4 @@
-version: 1.0
+version: 0.1.2
 shards:
   cute:
     github: Papierkorb/cute
@@ -8,3 +8,5 @@ shards:
     github: Papierkorb/fancyline
     commit: abf0c95f44e83cb11b4e39239db8eaa7bbb92e5f
 
+  cltk:
+    github: ziprandom/cltk

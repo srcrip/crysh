@@ -68,7 +68,7 @@ module Crysh
         # Collect the input string and split it into a list of separate commands
         # to be piped into each other.
         input = collect_input
-        next if input.nil?
+        next if input.nil? || input.empty?
         break if input == "exit" # TODO make this graceful exit not a hack
         # Expand things like $vars or the $() syntax before proceeding
         input = expand input

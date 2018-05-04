@@ -11,12 +11,6 @@ include Options
 # TODO fix stacktrace when using exit command.
 # TODO indent to level of previous prompt when waiting for additional input
 
-# Version information
-VERSION = "crysh: version 0.1.1
-crystal version: #{Crystal::VERSION}
-♥ thank you for using crysh ♥
-"
-
 # The startup method parses arguments the user passed in from command line.
 startup
 

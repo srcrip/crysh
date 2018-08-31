@@ -5,6 +5,9 @@ dependencies:
   fancyline:
     github: Papierkorb/fancyline
     branch: master
+  cltk:
+    github: ziprandom/cltk
+    branch: master
 
 authors:
   - sevensidedmarble <andrewianstewart@gmail.com>
@@ -13,6 +16,6 @@ targets:
   crysh:
     main: src/crysh.cr
 
-crystal: 0.23.1
+crystal: 0.24.2
 
 license: MIT

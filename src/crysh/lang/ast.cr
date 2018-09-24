@@ -91,6 +91,6 @@ end
 class Function < Expression
   values({
     proto: Prototype,
-    body:  ExpressionList,
+    body:  Expression,
   })
 end

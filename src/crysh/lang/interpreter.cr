@@ -67,6 +67,10 @@ class Interpreter
     end
   end
 
+  on ExpressionList do |node|
+    pp node
+  end
+
   on Binary do |node|
     left = visit node.left
     right = visit node.right
@@ -125,69 +129,31 @@ class Interpreter
 
   on Prototype do |node|
     puts "proto"
-    if @@protos[node.name]?
-      # get function if it's already defined
-      @@protos[node.name]
-    else
-      # add function, if not
-      @@protos[node.name] = node.arg_names
-    end
+    # if @@protos[node.name]?
+    #   # get function if it's already defined
+    #   @@protos[node.name]
+    # else
+    #   # add function, if not
+    #   @@protos[node.name] = node.arg_names
+    # end
   end
 
   on Function do |node|
     puts "function"
-    # Reset the symbol table?
-    # @st.clear
 
     # Translate the function's prototype.
-    proto = visit node.proto.as(Prototype)
+    # proto = visit node.proto.as(Prototype)
 
-    pp node.body.class
-    # @@functions[node.proto.name] = node.body.as(Array(Expression))
+    # pp node.body.class
+    # exps = case node.body
+    #        when ExpressionList
+    #          node.body
+    #        else
+    #          [node.body]
+    #        end
 
-    # params = func.each do |p|
-    #   # set values
-    # end
-    # func.params.to_a.each do |param|
-    #   @st[param.name] = alloca @ctx.float, param.name
-    #   store param, @st[param.name]
-    # end
+    # pp exps
 
-    # Create a new basic block to insert into, allocate space for
-    # the arguments, store their values, translate the expression,
-    # and set its value as the return value.
-    # body = node.body
-    # case body
-    # when ExpressionList
-    #   expressions = body.expressions
-    #   expressions.each_with_index do |expression, index|
-    #     if index < (expressions.size - 1)
-    #       visit expression
-    #     else
-    #       # Return?
-    #       visit(expression)
-    #     end
-    #   end
-    # else
-    #   # Return?
-    #   visit(body)
-    # end
-
-    # body = node.body
-    # @@functions[func.name] = ->(params) {
-    #   case body
-    #   when ExpressionList
-    #     expressions = body.expressions
-    #     expressions.each_with_index do |expression, index|
-    #       if index < (expressions.size - 1)
-    #         visit expression
-    #       end
-    #     end
-    #   else
-    #     visit body
-    #   end
-    # }
-
-    proto
+    # proto
   end
 end

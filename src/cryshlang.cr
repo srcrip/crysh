@@ -60,7 +60,8 @@ def main
   end
 end
 
-# main # Primary execution point
+main # Primary execution point
 # Language.new.evaluate("1-1; 5-2;")
-Language.new.evaluate("def foo() 1-1, 5-2 end;")
-# Language.new.evaluate("def foo() 1-1; 2-2; end;")
+# Language.new.evaluate("def foo() 1-1, 5-2 end;")
+# Language.new.evaluate("def foo()\n1-1\n2-2\nend;")
+# Language.new.evaluate("1; 2;")

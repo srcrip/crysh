@@ -35,7 +35,7 @@ class Lexer < CLTK::Scanner
   rule("&") { {:AMP} }
   rule("==") { {:EQL} }
   rule(":") { {:SEQ} }
-  # rule("\n") { {:CR} }
+  rule(/\n/) { {:NEWLINE} }
 
   # Identifier rule.
   rule(/[A-Za-z][A-Za-z0-9]*/) { |t| {:IDENT, t} }

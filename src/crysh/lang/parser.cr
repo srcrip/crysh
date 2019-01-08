@@ -19,7 +19,7 @@ class Parser < CLTK::Parser
     clause("p") { |p| p }
     clause("f") { |f| f }
   end
-
+  
   production(:e_list) do
     clause("e SEMI e") { |e1, _, e2| ExpressionList.new(expressions: [e1.as(Expression), e2.as(Expression)]) }
     clause("e_list SEMI e") { |e1, _, e2| ExpressionList.new(expressions: e1.as(ExpressionList).expressions + [e2.as(Expression)]) }
@@ -59,12 +59,9 @@ class Parser < CLTK::Parser
 
   list(:args, :e, :COMMA)
 
-  build_list_production(:f_body, :e, :COMMA)
-
   production(:ex, "EXTERN p_body") { |_, p| p }
   production(:p, "DEF p_body") { |_, p| p }
-  # production(:f, "p e END") { |p, e| Function.new(proto: p.as(Prototype), body: e.as(Expression)) }
-  production(:f, "p f_body END") { |p, f_body| Function.new(proto: p.as(Prototype), body: f_body) }
+  production(:f, "p e* END") { |p, e_list| Function.new(proto: p.as(Prototype), body: e_list.as(Expression)) }
 
   production(:p_body, "IDENT LPAREN arg_defs RPAREN") do |name, _, arg_names, _|
     x = Prototype.new(name: name.as(String), arg_names: arg_names.as(Array).map { |a| a.as(String) })

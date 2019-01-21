@@ -22,7 +22,7 @@ while true
   begin
 
     # read input
-    input = Readline.readline(":: ", true) || ""
+    input = Readline.readline("»  ", true) || ""
 
     # exit on exit
 
@@ -30,13 +30,15 @@ while true
 
     # lex input
     tokens = lexer.lex(input)
+    pp tokens
 
     # parse lexed tokens
     res = parser.parse(tokens, {accept: :first}).as(CLTK::ASTNode)
+    pp res
 
     # evaluate the result with a given scope
     # (scope my be altered by the expression)
-    evaluated =  res.eval_scope(scope).to_s
+    evaluated = res.eval_scope(scope).to_s
 
     # output result of evaluation
     puts evaluated

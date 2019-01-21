@@ -8,4 +8,4 @@ run:
 	crystal src/crysh.cr
 
 install:
-	ln -sf $(CWD)/crysh /usr/local/bin/crysh
+	ln -sf $(CWD)/crysh /usr/local/bin/crysh,

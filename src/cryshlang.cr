@@ -1,67 +1,71 @@
-require "./crysh/lang/parser"
-require "./crysh/lang/lexer"
-require "./crysh/lang/interpreter"
-require "./crysh/lang/ast"
-require "../lib/cltk/src/cltk/parser/exceptions/not_in_language_exception"
-require "colorize"
+require "readline"
+require "./cryshlang/lexer"
+require "./cryshlang/ast"
+require "./cryshlang/scope"
+require "./cryshlang/parser"
+require "./cryshlang/exceptions"
+require "../../src/cltk/macros"
+require "../../src/cltk/parser/type"
+require "../../src/cltk/parser/parser_concern"
 
-class Language
-  def initialize
-    @interpreter = Interpreter.new
-  end
+lexer  = EXP_LANG::Lexer
+parser = EXP_LANG::Parser
+scope  = EXP_LANG::Scope(Expression).new
 
-  def evaluate(input)
-    puts "input: " + input.inspect
-    puts "Begin lexing".colorize.green
-    lex = Lexer.lex(input)
-    pp lex.map { |t| [t.try(&.type), t.try(&.value)] }
+input = ""
 
-    puts "Begin parsing".colorize.green
-    ast = Parser.parse(lex)
-    pp ast
+puts "\n\n" +
+     "  Welcome to the CryshLang REPL, exit with: 'exit'  \n" +
+     "----------------------------------------------------\n\n"
 
-    puts "Begin interpreting".colorize.green
-    if ast.is_a?(CLTK::ASTNode)
-      @interpreter.eval(ast)
-    end
-  rescue e : CLTK::Lexer::Exceptions::LexingError
-    puts "Lexing error: Unspecified lexing error.".colorize.red
-    pp e.backtrace
-  rescue e : CLTK::Parser::Exceptions::NotInLanguage
-    puts "Parsing error: Line was not in language.".colorize.red
-    pp e.inspect
-    pp e.backtrace
-  rescue e : CLTK::Parser::Exceptions::BadToken
-    puts "Parsing error: The parser encountered an unrecognized token.".colorize.red
-    pp e.backtrace
-  rescue e : Exception
-    puts e.message, e.backtrace
-    puts
-  end
-end
+while true
+  begin
 
-def main
-  language = Language.new
+    # read input
+    input = Readline.readline("»  ", true) || ""
 
-  loop do
-    print("Cryshlang > ".colorize.cyan)
-    line = " "
+    # exit on exit
 
-    while line[-1..-1] != ";"
-      line += " " unless line.empty?
-      line += (gets || "")
-    end
+    exit if input == "exit"
 
-    if line == "quit;" || line == "exit;"
-      break
-    end
+    # lex input
+    tokens = lexer.lex(input)
+    pp tokens
 
-    language.evaluate(line)
+    # parse lexed tokens
+    res = parser.parse(tokens, {accept: :first}).as(CLTK::ASTNode)
+    pp res
+
+    # evaluate the result with a given scope
+    # (scope my be altered by the expression)
+    evaluated = res.eval_scope(scope).to_s
+
+    # output result of evaluation
+    puts evaluated
+
+  rescue e: CLTK::Lexer::Exceptions::LexingError
+    show_lexing_error(e, input)
+  rescue e: CLTK::NotInLanguage
+    show_syntax_error(e,input)
+  rescue e
+    puts e
   end
 end
 
-main # Primary execution point
-# Language.new.evaluate("1-1; 5-2;")
-# Language.new.evaluate("def foo() 1-1, 5-2 end;")
-# Language.new.evaluate("def foo()\n1-1\n2-2\nend;")
-# Language.new.evaluate("1; 2;")
+def show_lexing_error(e, input)
+  puts "Lexing error at:\n\n"
+  puts "    " + input.split("\n")[e.line_number-1]
+  puts "    " + e.line_offset.times().map { "-" }.join + "^"
+  puts e
+end
+
+def show_syntax_error(e,input)
+    pos = e.current.position
+    if pos
+      puts "Syntax error at:"
+      puts "    " + input.split("\n")[pos.line_number-1]
+      puts "    " + pos.line_offset.times().map { "-" }.join + "^"
+    else
+      puts "invalid input: #{input}"
+    end
+end

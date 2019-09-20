@@ -10,23 +10,25 @@ module REPL
         "  Welcome to the CryshLang REPL, exit with: 'exit'  \n" +
         "----------------------------------------------------\n\n"
 
-    while true
+    loop do
       begin
-        # Read input.
-        input = Readline.readline("»  ", true) || ""
-
-        # Exit on exit.
-        exit if input == "exit"
-
-        # Evaluate.
-        evaluated = lang.evaluate input
-
-        # Output result of evaluation.
-        puts evaluated
+        evaluate(lang, Readline.readline("»  ", true) || "")
       end
     end
   end
 
+  def evaluate(lang = Cryshlang.new, input = "")
+    # Exit on exit.
+    exit if input == "exit"
+    # Evaluate.
+    evaluated = lang.evaluate input
+    # Output result of evaluation.
+    puts evaluated
+  end
 end
 
+# The following can be done to evaluate a single expression:
+# REPL.evaluate(Cryshlang.new, "1+1")
+
+# Otherwise:
 REPL.run

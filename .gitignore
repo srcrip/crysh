@@ -1,3 +1,5 @@
 /crysh
 /.shards/
 /lib/
+/crysh/
+/repl/

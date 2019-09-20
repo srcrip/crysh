@@ -1,5 +1,6 @@
 require "./crysh/*"
 require "./crysh/builtins/*"
+require "./cryshlang"
 require "colorize"
 require "fancyline"
 include Options
@@ -62,20 +63,35 @@ module Crysh
     end
 
     def run
+      # Initialize the interpreter.
+      lang = Cryshlang.new
+
       loop do
-        # Collect the input string and split it into a list of separate commands
-        # to be piped into each other.
+        #######
+        # NEW #
+        #######
+
+
+        #######
+        # OLD #
+        #######
+        # Get input.
         input = collect_input
         next if input.nil? || input.empty?
-        break if input == "exit" # TODO make this graceful exit not a hack
-        # Expand things like $vars or the $() syntax before proceeding
+
+        # TODO make this a graceful exit, not a hack. IE it needs to be a function.
+        break if input == "exit" || input == "quit"
+
+        # Expand environment variables, and other things that need expansion before processing.
         input = expand input
+
+        # Split input into commands.
         commands = split_on_pipes(input)
 
         # Add the gathered commands into a job
         job = Jobs.manager.add(Job.new)
         commands.each_with_index do |command, index|
-          job.add_command(command, index)
+          job.add_command(lang, command, index)
         end
 
         # Wait for the whole job to finish before completing the loop

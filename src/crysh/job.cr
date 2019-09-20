@@ -1,3 +1,8 @@
+# NOTE: Detecting whether to execute a job as a unix command or a expression in Cryshlang.
+# 1. Is the first argument a unix command or a builtin?
+# 2. If so, process as a unix process
+# 3. If not, process it as a Cryshlang expression
+#
 # A job is a collection of processes bound together by pipes, with the process group set to the pid of the first process.
 class Job
   # Note, declaring vars here is the same as declaring them in the constructor, except you can also explicitly declare types here.
@@ -13,7 +18,7 @@ class Job
   end
 
   # Add a command to this job.
-  def add_command(c : String, index : Int32)
+  def add_command(lang, c : String, index : Int32)
     # c here is raw input, the args have not yet been seperated.
     @commands.push c
     # split makes an array delimited by " ".

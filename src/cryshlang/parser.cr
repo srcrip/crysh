@@ -38,7 +38,7 @@ class EXP_LANG::Parser < CLTK::Parser
     clause(:identifier)
     clause(:string)
     clause(:number)
-    clause(:NIL)	          { KNil.new }
+    clause(:NIL)            { KNil.new }
     clause(:TRUE)                 { KTrue.new }
     clause(:FALSE)                { KFalse.new }
     nil
@@ -81,9 +81,9 @@ class EXP_LANG::Parser < CLTK::Parser
     clause("e OR e")    { |e0, _, e2| KOr.new(left: e0.as(Expression),  right: e2.as(Expression)) }
     clause("e AND e")   { |e0, _, e2| KAnd.new(left: e0.as(Expression), right: e2.as(Expression)) }
     clause("e PLUS e")  { |e0, _, e1| Add.new(left: e0.as(Expression),  right: e1.as(Expression)) }
-    clause("e SUB e")	{ |e0, _, e1| Sub.new(left: e0.as(Expression),  right: e1.as(Expression)) }
-    clause("e MUL e")	{ |e0, _, e1| Mul.new(left: e0.as(Expression),  right: e1.as(Expression)) }
-    clause("e DIV e")	{ |e0, _, e1| Div.new(left: e0.as(Expression),  right: e1.as(Expression)) }
+    clause("e SUB e")   { |e0, _, e1| Sub.new(left: e0.as(Expression),  right: e1.as(Expression)) }
+    clause("e MUL e")   { |e0, _, e1| Mul.new(left: e0.as(Expression),  right: e1.as(Expression)) }
+    clause("e DIV e")   { |e0, _, e1| Div.new(left: e0.as(Expression),  right: e1.as(Expression)) }
   end
 
   production(:identifier) do
@@ -91,11 +91,11 @@ class EXP_LANG::Parser < CLTK::Parser
   end
 
   production(:string) do
-    clause(:STRING)	{ |s| AString.new(value: s.as(String)) }
+    clause(:STRING)   { |s| AString.new(value: s.as(String)) }
   end
 
   production(:number) do
-    clause(:NUMBER)	{ |n| ANumber.new(value: n.as(Float64)) }
+    clause(:NUMBER)   { |n| ANumber.new(value: n.as(Float64)) }
   end
 
   production(:varassign) do
@@ -107,6 +107,7 @@ class EXP_LANG::Parser < CLTK::Parser
   production(:sep) do
     clause(:SEMI)
     clause(:CR)
+    # clause(:WS)
   end
 
   production(:comma) do
@@ -114,7 +115,8 @@ class EXP_LANG::Parser < CLTK::Parser
   end
 
   production(:fun_def) do
-    clause("fun_head sep fun_body sep END") do |head, _, body, _, _|
+    # clause("fun_head sep fun_body sep END") do |head, _, body, _, _|
+    clause("fun_head DO fun_body sep END") do |head, _, body, _, _|
       args_vars = head.as(Array)[1].as(Array).map {|v| Variable.new(name: v.as(String))}
       exps = body.as(Array)
              .reduce([] of Expression) do |a, exp|

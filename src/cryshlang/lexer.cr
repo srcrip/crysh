@@ -7,8 +7,10 @@ module EXP_LANG
   class Lexer < CLTK::Scanner
     extend CLTK::Scanner::LexerCompatibility
 
-                # Skip whitespace.
-    rule("\n")  { { :CR     } }
+    rule("\n")  { { :CR } }
+    # rule(" ")   { { :WS } }
+
+    # Skip whitespace.
     rule(" ")
 
     # Keywords

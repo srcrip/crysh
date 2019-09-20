@@ -127,11 +127,10 @@ class Variable < Expression
 end
 
 class FunCall < Expression
-
   values({
-             prototype_exp: Expression,
-             parameters: Array(Expression)
-           })
+           prototype_exp: Expression,
+           parameters: Array(Expression)
+         })
   def eval_scope(scope)
     prototype = prototype_exp.eval_scope(scope)
     raise "#{prototype} is not a Function" unless prototype.is_a? Prototype

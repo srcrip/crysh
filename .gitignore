@@ -2,4 +2,5 @@
 /.shards/
 /lib/
 /crysh/
-/repl/
+/src/.___generated___code.cr.cr
+/repl

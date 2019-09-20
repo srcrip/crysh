@@ -19,7 +19,8 @@ module EXP_LANG
       elsif p
         p.get(key)
       else
-        EXP_LANG::Undefined
+        # EXP_LANG::Undefined
+        false
       end
     end
 

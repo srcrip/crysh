@@ -10,6 +10,10 @@ include Options
 # TODO add vim and emacs modes to fancyline.
 # TODO indent to level of previous prompt when waiting for additional input
 
+# some commands I've used to test process groups in crysh:
+# sleep 5 | sleep 10 | sleep 15 | ps -o pid,pgid,ppid,args
+
+
 # The startup method parses arguments the user passed in from command line.
 startup
 
@@ -40,9 +44,6 @@ Dir.mkdir "#{ENV["HOME"]}/.config/crysh/" unless Dir.exists? "#{ENV["HOME"]}/.co
 HISTFILE = "#{ENV["HOME"]}/.config/crysh/history.log"
 CONFIG   = "#{ENV["HOME"]}/.config/crysh/config.yml"
 
-# some commands I've used to test process groups in crysh:
-# sleep 5 | sleep 10 | sleep 15 | ps -o pid,pgid,ppid,args
-
 module Crysh
   struct Prompt
     property normal, continued, string
@@ -67,15 +68,6 @@ module Crysh
       lang = Cryshlang.new
 
       loop do
-        #######
-        # NEW #
-        #######
-
-
-        #######
-        # OLD #
-        #######
-        # Get input.
         input = collect_input
         next if input.nil? || input.empty?
 
@@ -85,24 +77,36 @@ module Crysh
         # Expand environment variables, and other things that need expansion before processing.
         input = expand input
 
-        # Split input into commands.
-        commands = split_on_pipes(input)
+        evaluated = lang.evaluate input
 
-        # Add the gathered commands into a job
-        job = Jobs.manager.add(Job.new)
-        commands.each_with_index do |command, index|
-          job.add_command(lang, command, index)
-        end
-
-        # Wait for the whole job to finish before completing the loop
-        job.processes.each do |proc|
-          LibC.waitpid(proc.pid, out status_ptr, WUNTRACED)
-          pp status_ptr if debug?
+        # The interpreter returns false upon inputs that would return undefined.
+        if evaluated == false
+          handle input
+        else
+          puts evaluated.to_s
         end
       end
 
       # save all the history from this session.
       save_history(@fancy)
+    end
+
+    def handle(input)
+      # Split input into commands.
+      commands = split_on_pipes(input)
+
+      # Add the gathered commands into a job
+      job = Jobs.manager.add(Job.new)
+      commands.each_with_index do |command, index|
+        # job.add_command(lang, command, index)
+        job.add_command(command, index)
+      end
+
+      # Wait for the whole job to finish before completing the loop
+      job.processes.each do |proc|
+        LibC.waitpid(proc.pid, out status_ptr, WUNTRACED)
+        pp status_ptr if debug?
+      end
     end
 
     # Collect a single line of input. A line can be continued by escaping the

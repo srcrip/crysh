@@ -23,7 +23,7 @@ module REPL
     # Evaluate.
     evaluated = lang.evaluate input
     # Output result of evaluation.
-    puts evaluated
+    puts evaluated.to_s
   end
 end
 

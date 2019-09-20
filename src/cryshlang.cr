@@ -8,7 +8,7 @@ require "../../src/cltk/macros"
 require "../../src/cltk/parser/type"
 require "../../src/cltk/parser/parser_concern"
 
-DEBUG = true
+DEBUG = false
 
 class Cryshlang
   def initialize
@@ -48,7 +48,7 @@ class Cryshlang
   # Evaluate the AST tree with a given scope.
   # (scope my be altered by the expression)
   def interprate(tree)
-    tree.eval_scope(@scope).to_s
+    tree.eval_scope(@scope)
   end
 
   def show_lexing_error(e, input)

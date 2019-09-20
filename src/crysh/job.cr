@@ -18,7 +18,8 @@ class Job
   end
 
   # Add a command to this job.
-  def add_command(lang, c : String, index : Int32)
+  # def add_command(lang, c : String, index : Int32)
+  def add_command(c : String, index : Int32)
     # c here is raw input, the args have not yet been seperated.
     @commands.push c
     # split makes an array delimited by " ".

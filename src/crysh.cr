@@ -27,16 +27,16 @@ lib LibC
   fun setpgid(pid : PidT, pgid : PidT) : Int32
 end
 
-# Signal::STOP.trap do |x|
-#   puts "Got SIGSTOP"
-#   # if fg = Jobs.manager.fg
-#   #   fg.kill(Signal::STOP)
-#   # end
-# end
+Signal::STOP.trap do |x|
+  puts "-- Got SIGSTOP --"
+  # if fg = Jobs.manager.fg
+  #   fg.kill(Signal::STOP)
+  # end
+end
 
-# Signal::INT.trap do |x|
-#   puts "Got SIGINT"
-# end
+Signal::INT.trap do |x|
+  # puts "\n-- Got SIGINT --\n"
+end
 
 Dir.mkdir "#{ENV["HOME"]}/.config/" unless Dir.exists? "#{ENV["HOME"]}/.config/"
 Dir.mkdir "#{ENV["HOME"]}/.config/crysh/" unless Dir.exists? "#{ENV["HOME"]}/.config/crysh/"
@@ -97,6 +97,11 @@ module Crysh
     # newline with \.
     def collect_input
       input = @fancy.readline(@prompt.normal)
+
+      # The following only trips upon input == EOF, Ie, the user hit ctrl-d.
+      # Ctrl-c purposefully will not return nil.
+      exit if input.nil?
+
       # TODO detect unclosed quotations
       while !input.nil? && input.ends_with? '\\'
         input = input.rchop '\\'

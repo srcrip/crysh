@@ -22,9 +22,6 @@ class Cryshlang
       puts "No input!"
     else
       interprate(parse(lex(input)))
-      # lexed = lex input
-      # parsed = parse lexed
-      # interpreted = interprate parsed
     end
   rescue e: CLTK::Lexer::Exceptions::LexingError
     show_lexing_error(e, input)

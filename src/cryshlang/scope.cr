@@ -20,7 +20,9 @@ module EXP_LANG
         p.get(key)
       else
         # EXP_LANG::Undefined
-        false
+        # Code gets here if no particular parsing was possible
+        # We return nil here specifically to tell the main handler that this statement returned nothing
+        nil
       end
     end
 

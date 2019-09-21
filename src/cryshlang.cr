@@ -8,7 +8,7 @@ require "../../src/cltk/macros"
 require "../../src/cltk/parser/type"
 require "../../src/cltk/parser/parser_concern"
 
-DEBUG = true
+DEBUG = false
 
 class Cryshlang
   def initialize

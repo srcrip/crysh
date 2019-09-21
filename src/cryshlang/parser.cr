@@ -20,9 +20,7 @@ class EXP_LANG::Parser < CLTK::Parser
   build_list_production(:expressions, :e, :sep)
 
   production(:e) do
-
     clause(:function_call)
-
     clause(:fun_def)
     clause(:varassign)
     clause(:binary_expressions)
@@ -107,7 +105,7 @@ class EXP_LANG::Parser < CLTK::Parser
   production(:sep) do
     clause(:SEMI)
     clause(:CR)
-    # clause(:WS)
+    clause(:WS)
   end
 
   production(:comma) do

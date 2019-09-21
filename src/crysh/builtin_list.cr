@@ -3,6 +3,7 @@ module Builtin
 
   LIST = {
     "ls"     => ->ls(String),
+    "la"     => ->la(String),
     "cd"     => ->cd(String),
     "exit"   => ->exit_shell(String),
     "quit"   => ->exit_shell(String),

@@ -69,9 +69,9 @@ module Crysh
 
       loop do
         input = collect_input
+
         next if input.nil? || input.empty?
 
-        # TODO make this a graceful exit, not a hack. IE it needs to be a function.
         break if input == "exit" || input == "quit"
 
         # Expand environment variables, and other things that need expansion before processing.
@@ -81,7 +81,9 @@ module Crysh
 
         # The interpreter returns false upon inputs that would return undefined.
         if evaluated == false
-          handle input
+          # If the interpreter can't figure things out, it might be a shell
+          # command, so we pass it to this method.
+          InputHandler.interpret input
         else
           puts evaluated.to_s
         end
@@ -89,24 +91,6 @@ module Crysh
 
       # save all the history from this session.
       save_history(@fancy)
-    end
-
-    def handle(input)
-      # Split input into commands.
-      commands = split_on_pipes(input)
-
-      # Add the gathered commands into a job
-      job = Jobs.manager.add(Job.new)
-      commands.each_with_index do |command, index|
-        # job.add_command(lang, command, index)
-        job.add_command(command, index)
-      end
-
-      # Wait for the whole job to finish before completing the loop
-      job.processes.each do |proc|
-        LibC.waitpid(proc.pid, out status_ptr, WUNTRACED)
-        pp status_ptr if debug?
-      end
     end
 
     # Collect a single line of input. A line can be continued by escaping the

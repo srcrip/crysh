@@ -8,10 +8,10 @@ module EXP_LANG
     extend CLTK::Scanner::LexerCompatibility
 
     rule("\n")  { { :CR } }
-    # rule(" ")   { { :WS } }
+    rule(" ")   { { :WS } }
 
     # Skip whitespace.
-    rule(" ")
+    # rule(" ")
 
     # Keywords
     rule("def") { { :DEF    } }

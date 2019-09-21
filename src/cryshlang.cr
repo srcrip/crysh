@@ -69,3 +69,8 @@ class Cryshlang
     end
   end
 end
+
+# main
+# Language.new.evaluate("1-1; 5-2;")
+# Language.new.evaluate("def foo() 1-1, 5-2 end;")
+# Language.new.evaluate("def foo() 1-1; 2-2; end;")

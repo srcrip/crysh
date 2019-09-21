@@ -10,6 +10,8 @@ def cd(dir)
   dir = "/" if dir == ""
   dir = File.expand_path(dir)
   Dir.cd(dir)
+rescue err : Errno
+  puts "crysh: unknown directory."
 end
 
 # Don't rename this to `exit` as that's in the global namespace.

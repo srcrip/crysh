@@ -36,3 +36,8 @@ def shell_alias(input)
   name, command = input.split('=')
   puts "Made alias " + name + " = " + command if debug?
 end
+
+def help(args)
+  puts "\n-- Welcome to crysh shell --\n\n"
+  "Help: see https://github.com/Sevensidedmarble/crysh for more information."
+end

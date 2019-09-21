@@ -25,6 +25,9 @@ lib LibC
   fun setpgrp : Int32
   # sets process specified by pid to process group specified by pgid
   fun setpgid(pid : PidT, pgid : PidT) : Int32
+  # set the terminals foreground process group
+  fun tcsetpgrp(fd : Int32, pgid : PidT) : Int32
+  fun tcgetpgrp : Int32
 end
 
 Signal::STOP.trap do |x|

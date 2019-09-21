@@ -16,6 +16,8 @@ class InputHandler
     job.processes.each do |proc|
       LibC.waitpid(proc.pid, out status_ptr, WUNTRACED)
       pp status_ptr if debug?
+      print("process ended with code: ", status_ptr)
     end
+    LibC.tcsetpgrp(STDOUT.fd, Process.pgid) if Process.pgid
   end
 end

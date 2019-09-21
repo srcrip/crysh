@@ -11,6 +11,7 @@ module Builtin
     "export" => ->export(String),
     "grep"   => ->grep(String),
     "alias"  => ->shell_alias(String),
+    "help"   => ->help(String),
   }
 
   def builtin?(program)

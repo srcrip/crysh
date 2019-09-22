@@ -13,6 +13,9 @@ module EXP_LANG
     # Skip whitespace.
     # rule(" ")
 
+    # Ignore pipes for now
+    rule("|")
+
     # Keywords
     rule("def") { { :DEF    } }
     rule("fun") { { :FUN    } }

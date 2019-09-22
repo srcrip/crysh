@@ -1,4 +1,4 @@
-# A wrapper for creating jobs.
+
 class InputHandler
   # Create the actual jobs
   def self.interpret(input, initial_pgid)
@@ -11,6 +11,17 @@ class InputHandler
       # job.add_command(lang, command, index)
       job.add_command(command, index, commands.size)
     end
+
+    # job.processes.each_with_index do |proc, index|
+    #   if index + 1 == job.processes.size
+    #     # nothing
+    #   else
+    #     reader, writer = IO.pipe
+    #     proc.output = IO::Redirect::Pipe
+    #     proc.output = writer
+    #     job.processes[index+1].input = reader
+    #   end
+    # end
 
     # Wait for the whole job to finish before completing the loop
     job.processes.each do |proc|

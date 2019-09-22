@@ -15,6 +15,8 @@ class Job
     @commands = [] of String
     # And then they get turned into actual processes bound together by pipes.
     @processes = [] of Process
+
+    @pipe_in, @pipe_out = IO.pipe
   end
 
   # Add a command to this job.
@@ -43,23 +45,20 @@ class Job
       end
 
       # now we can attempt to spawn the process.
-      @processes.push (spawn_process(program, args))
-
-      # first_pid = @processes[0].pid
-      # LibC.tcsetpgrp(STDOUT.fd, first_pid) if first_pid
+      @processes.push(spawn_process(program, args, pipe_length))
 
       p "Process:" if debug?
       pp @processes.last if debug?
 
       # Do some final cleaning up and closing of the FDs we had to open. Broken pipes are bad.
-      @placeholder_out.close unless @placeholder_out == STDOUT
-      @placeholder_in.close unless @placeholder_in == STDIN
-      @placeholder_in = @pipe.first unless @pipe.empty?
+      # @placeholder_out.close unless @placeholder_out == STDOUT
+      # @placeholder_in.close unless @placeholder_in == STDIN
+      # @placeholder_in = @pipe.first unless @pipe.empty?
     end
   end
 
   # Spawn/Exec a process in this job.
-  def spawn_process(command, arguments)
+  def spawn_process(command, arguments, pipe_length)
     Process.fork {
       # if this is the first process in the job, its will make a new process group with its pid as the pgid.
       # this is very important as we will later tell the kernel that this process group needs to receive signals.
@@ -73,19 +72,31 @@ class Job
         LibC.setpgid(Process.pid, pid) if pid
       end
 
-      unless @placeholder_out == STDOUT
-        STDOUT.reopen(@placeholder_out)
-        @placeholder_out.close
-      end
+      # unless @placeholder_out == STDOUT
+      #   STDOUT.reopen(@placeholder_out)
+      #   @placeholder_out.close
+      # end
 
-      unless @placeholder_in == STDIN
-        STDIN.reopen(@placeholder_in)
-        @placeholder_in.close
-      end
+      # unless @placeholder_in == STDIN
+      #   STDIN.reopen(@placeholder_in)
+      #   @placeholder_in.close
+      # end
+
+      # TODO
+      # close fds at /proc/$pid/fd/0
+
 
       # Try to exec the command. This mutates this crystal process that we've forked into whatever command is.
       begin
-        Process.exec command, arguments
+        # if this is last command in the pipeline, don't redirect out
+        if @processes.size + 1 == pipe_length
+          Process.exec command, arguments, nil, false, false, @pipe_in
+        # if this is first command, don't redirect in
+        elsif @processes.size == 0
+          Process.exec command, arguments, nil, false, false, STDIN, @pipe_out
+        else
+          Process.exec command, arguments, nil, false, false, @pipe_in, @pipe_out
+        end
       rescue err : Errno
         # Display a notice if executing the command failed.
         puts "crysh: unknown command."

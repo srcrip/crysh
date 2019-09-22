@@ -19,7 +19,7 @@ class Job
 
   # Add a command to this job.
   # def add_command(lang, c : String, index : Int32)
-  def add_command(c : String, index : Int32)
+  def add_command(c : String, index : Int32, pipe_length : Int32)
     # c here is raw input, the args have not yet been seperated.
     @commands.push c
     # split makes an array delimited by " ".
@@ -35,7 +35,7 @@ class Job
       Builtin.call_builtin(program, args.join)
     else
       # First we need to set the placeholder file descriptors to some initial values
-      if index + 1 < @commands.size
+      if index + 1 < pipe_length
         @pipe = IO.pipe.to_a
         @placeholder_out = @pipe.last
       else
@@ -45,8 +45,8 @@ class Job
       # now we can attempt to spawn the process.
       @processes.push (spawn_process(program, args))
 
-      first_pid = @processes[0].pid
-      LibC.tcsetpgrp(STDOUT.fd, first_pid) if first_pid
+      # first_pid = @processes[0].pid
+      # LibC.tcsetpgrp(STDOUT.fd, first_pid) if first_pid
 
       p "Process:" if debug?
       pp @processes.last if debug?

@@ -27,18 +27,26 @@ lib LibC
   fun setpgid(pid : PidT, pgid : PidT) : Int32
   # set the terminals foreground process group
   fun tcsetpgrp(fd : Int32, pgid : PidT) : Int32
-  fun tcgetpgrp : Int32
+  # get the terminals process group
+  fun tcgetpgrp(fd : Int32) : Int32
+  # make new session
+  fun setsid : Int32
+  fun tcgetsid(fd : Int32) : Int32
 end
 
 Signal::STOP.trap do |x|
-  puts "-- Got SIGSTOP --"
+  pp "SIGSTOP received\n"
   # if fg = Jobs.manager.fg
   #   fg.kill(Signal::STOP)
   # end
 end
 
 Signal::INT.trap do |x|
-  # puts "\n-- Got SIGINT --\n"
+  pp "SIGINT received\n"
+end
+
+Signal::HUP.trap do |x|
+  pp "SIGHUP received\n"
 end
 
 Dir.mkdir "#{ENV["HOME"]}/.config/" unless Dir.exists? "#{ENV["HOME"]}/.config/"
@@ -70,6 +78,15 @@ module Crysh
       # Initialize the interpreter.
       lang = Cryshlang.new
 
+      # Grab our process group id
+      initial_pgid = LibC.tcgetpgrp(STDOUT.fd)
+
+      begin
+        LibC.setsid
+      rescue err : Errno
+        puts "crysh: failure to become session leader. Is tty interactive?"
+      end
+
       loop do
         input = collect_input
 
@@ -86,7 +103,7 @@ module Crysh
         if evaluated == nil
           # If the interpreter can't figure things out, it might be a shell
           # command, so we pass it to this method.
-          InputHandler.interpret input
+          InputHandler.interpret input, initial_pgid
         else
           puts evaluated.to_s
         end

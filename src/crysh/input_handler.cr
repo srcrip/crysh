@@ -1,7 +1,7 @@
 # A wrapper for creating jobs.
 class InputHandler
   # Create the actual jobs
-  def self.interpret(input)
+  def self.interpret(input, initial_pgid)
     # Split input into commands
     commands = split_on_pipes(input)
 
@@ -17,7 +17,9 @@ class InputHandler
       LibC.waitpid(proc.pid, out status_ptr, WUNTRACED)
       pp status_ptr if debug?
       print("process ended with code: ", status_ptr)
+      pp "Done"
+      LibC.tcsetpgrp(STDOUT.fd, initial_pgid) if initial_pgid
     end
-    LibC.tcsetpgrp(STDOUT.fd, Process.pgid) if Process.pgid
+    # LibC.tcsetpgrp(STDOUT.fd, Process.pgid) if Process.pgid
   end
 end

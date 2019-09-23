@@ -98,27 +98,14 @@ class Job
 
         # unless this job only has 1 process... IE theres no pipes at all!
         unless @pipes.size == 0
-          n = @processes.size
+          n = @processes.size - 1
           if @processes.size == 0 # If this is the first command in the job
+            n = 0
             # @pipes[n][1] = STDOUT if @processes.size + 1 == pipe_length
-            pp "hit first"
-            pp n
-            pp @pipes[n]
-            # pp @pipes[n][1]
             Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
           elsif @processes.size + 1 == pipe_length # if this is the last
-            # @pipes[n][1] = STDOUT
-            pp "hit last"
-            pp n
-            pp @pipes[n]
-            # pp @pipes[n][0]
             Process.exec command, arguments, nil, false, false, @pipes[n][0]
           else # if this is a command in the middle
-            pp "hit middle"
-            pp n
-            pp @pipes[n][0]
-            pp @pipes[n+1][1]
-            # pp @pipes[n][0], @pipes[n+1][1]
             Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
           end
         else

@@ -110,7 +110,7 @@ class Job
           Process.exec command, arguments
         else
           if redirect == "|" || last_redir == "|"
-            spawn_with_pipe command, arguments, redirect, last_redir, pipe_length
+            spawn_with_pipe command, next_cmd, arguments, redirect, last_redir, pipe_length
           elsif redirect == ">" || last_redir == ">"
             spawn_with_gt command, next_cmd, arguments, redirect, last_redir, pipe_length
           elsif redirect == "<" || last_redir == "<"
@@ -157,24 +157,34 @@ class Job
   end
 
   # This is classic pipe redirection
-  def spawn_with_pipe(command, arguments, redirect, last_redir, pipe_length)
+  def spawn_with_pipe(command, next_cmd, arguments, redirect, last_redir, pipe_length)
     n = @processes.size - 1
 
-    # if redirect == ">"
-    #   fd = File.open("out.txt", mode = "w")
-    #   puts @pipes[n][1]
-    #   fd = @pipes[n][1].reopen(fd)
-    #   pp @pipes[n][1]
-    # end
-
-    if @processes.size == 0 # If this is the first command in the job
-      n = 0
-      Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
-    elsif @processes.size + 1 == pipe_length # if this is the last
+    if next_cmd
+      if redirect == ">"
+        if @processes.size == 0 # If this is the first command in the job
+          n = 0
+          fd = File.open(next_cmd, mode = "w")
+          fd = @pipes[n][1].reopen(fd)
+          Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
+        else # if this is a command in the middle
+          fd = File.open(next_cmd, mode = "w")
+          fd = @pipes[n+1][1].reopen(fd)
+          Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
+        end
+      else
+        if @processes.size == 0 # If this is the first command in the job
+          n = 0
+          Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
+        else # if this is a command in the middle
+          Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
+        end
+      end
+    else # if this is the last
       Process.exec command, arguments, nil, false, false, @pipes[n][0]
-    else # if this is a command in the middle
-      Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
     end
+
+
   end
 
   def set_process_group

@@ -1,5 +1,6 @@
 require "../../src/cltk/ast"
 require "./scope"
+require "./command"
 
 class CLTK::ASTNode
   def eval_scope(scope)
@@ -19,9 +20,36 @@ class XProgram < Expression
          })
 
   def eval_scope(scope)
-    expressions.compact.reduce(EXP_LANG::Undefined) do |lastResult, exp|
-      exp.eval_scope(scope)
+    exps = expressions.compact
+    cmd_index_start = 0
+    commands = [] of Command
+
+    exps.each_with_index.reduce(EXP_LANG::Undefined) do |lastResult, (exp, index)|
+      val = ""
+      # check if the next expression is a redirect
+      if index + 1 != exps.size && exps[index + 1].is_a? Redirect
+        exps[cmd_index_start..index].each do |c|
+          evaluated = c.eval_scope(scope)
+          val = [val, evaluated].join(" ") if evaluated.is_a? String
+        end
+        commands << Command.new(val, exps[index + 1].as(Redirect))
+      elsif exp.is_a? Redirect
+        cmd_index_start = index + 1
+      elsif index + 1 == exps.size
+        exps[cmd_index_start..index].each do |c|
+          evaluated = c.eval_scope(scope)
+          val = [val, evaluated].join(" ") if evaluated.is_a? String
+        end
+        commands << Command.new(val, nil)
+      end
+
+      # pp exp.eval_scope(scope)
     end
+
+    pipeline = Pipeline.new(commands)
+
+    # return false for now
+    false
   end
 end
 
@@ -145,7 +173,15 @@ class Variable < Expression
   end
 
   def eval_scope(scope)
-    scope.get(name)
+    # check if this is a variable
+    value = scope.get(name)
+
+    # If it's not, return the name
+    if value
+      value
+    else
+      name
+    end
   end
 end
 

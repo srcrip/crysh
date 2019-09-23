@@ -10,6 +10,29 @@ class Job
   # @placeholder_out : IO::FileDescriptor = STDOUT
   @pipe = [] of IO::FileDescriptor
 
+  def run(commands)
+    # Add commands to the job
+    commands.each_with_index do |command, index|
+      add_command(command, index, commands.size)
+    end
+
+    # Wait for the whole job to finish, after each finish start clearing pipes
+    @processes.each_with_index do |proc, index|
+      LibC.waitpid(proc.pid, out status_ptr, WUNTRACED)
+
+      # Close this jobs pipes
+      proc.close
+
+      unless @processes.size == 1 || @processes.size == index + 1
+        @pipes[index][1].close
+        @pipes[index][0].close
+      end
+
+      # Set the main process group of the shell to be in the foreground again
+      LibC.tcsetpgrp(STDOUT.fd, Crysh::PGID) if Crysh::PGID
+    end
+  end
+
   def initialize(@pipe_length : Int32)
     @pipe_length -= 1
     # When a job is made, Strings are input representing the requested programs to launch.
@@ -32,7 +55,8 @@ class Job
   end
 
   # Add a command to this job.
-  def add_command(c : String, index : Int32, pipe_length : Int32)
+  def add_command(c : String?, index : Int32, pipe_length : Int32)
+    return unless c
     # c here is raw input, the args have not yet been seperated.
     @commands.push c
     # split makes an array delimited by " ".

@@ -55,6 +55,8 @@ Dir.mkdir "#{ENV["HOME"]}/.config/crysh/" unless Dir.exists? "#{ENV["HOME"]}/.co
 HISTFILE = "#{ENV["HOME"]}/.config/crysh/history.log"
 CONFIG   = "#{ENV["HOME"]}/.config/crysh/config.yml"
 
+Crysh::PGID = LibC.tcgetpgrp(STDOUT.fd)
+
 module Crysh
   struct Prompt
     property normal, continued, string
@@ -105,7 +107,7 @@ module Crysh
           # command, so we pass it to this method.
           InputHandler.interpret input, initial_pgid
         else
-          puts evaluated.to_s
+          puts evaluated.to_s unless evaluated == false
         end
       end
 

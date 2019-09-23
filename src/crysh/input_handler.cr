@@ -10,7 +10,6 @@ class InputHandler
     # Add the gathered commands into a job
     job = Jobs.manager.add(Job.new(commands.size))
     commands.each_with_index do |command, index|
-      # job.add_command(lang, command, index)
       job.add_command(command, index, commands.size)
     end
 

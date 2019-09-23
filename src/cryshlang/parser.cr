@@ -13,7 +13,6 @@ class EXP_LANG::Parser < CLTK::Parser
 
   production(:statement) do
     clause("expressions sep*") do |e, sep|
-      # pp sep
       es = e.as(Array).map(&.as(Expression))
       ps = sep.as(Array).map(&.as(Redirect))
       XProgram.new( expressions: es )

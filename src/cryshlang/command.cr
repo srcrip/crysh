@@ -17,6 +17,10 @@ class Command
   def commands
     @commands
   end
+
+  def redirect
+    @redirect
+  end
 end
 
 class Pipeline
@@ -28,7 +32,7 @@ class Pipeline
     @job = Jobs.manager.add(Job.new(@commands.size))
 
     # Run the jobs, by adding in commands to it
-    @job.run(@commands.map(&.commands))
+    @job.run(@commands.map(&.commands), @commands.map(&.redirect.to_s))
   end
 
   def to_s

@@ -56,23 +56,26 @@ end
 class Redirect < Expression
 end
 
+# The classic |
 class RedirectPipe < Redirect
   def to_s
-    "Pipe"
+    "|"
   end
 end
 
 
+# Write STDOUT >
 class RedirectWriteOut < Redirect
   def to_s
-    "Write STDOUT >"
+    ">"
   end
 end
 
 
+# Read STDIN <
 class RedirectReadIn < Redirect
   def to_s
-    "Read STDIN <"
+    "<"
   end
 end
 

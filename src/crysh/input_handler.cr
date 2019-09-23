@@ -6,7 +6,7 @@ class InputHandler
     commands = split_on_pipes(input)
 
     # Add the gathered commands into a job
-    job = Jobs.manager.add(Job.new)
+    job = Jobs.manager.add(Job.new(commands.size))
     commands.each_with_index do |command, index|
       # job.add_command(lang, command, index)
       job.add_command(command, index, commands.size)
@@ -18,12 +18,19 @@ class InputHandler
       # Close this jobs pipes
       proc.close
 
-      # 2 because this is second to last
-      if index + 2 >= job.processes.size
-        # TODO this needs more detail to account for more pipes...
-        # Kill all the pipes used for IPC in the pipeline
-        job.@pipe_out.close
+      # pp "\nprocess ended with code: ", status_ptr
+
+      unless job.processes.size == 1 || job.processes.size == index + 1
+        job.@pipes[index][1].close
+        job.@pipes[index][0].close
       end
+
+      # 2 because this is second to last
+      # if index + 2 >= job.processes.size
+      #   # TODO this needs more detail to account for more pipes...
+      #   # Kill all the pipes used for IPC in the pipeline
+      #   job.@pipe_out.close
+      # end
 
 
       puts("\nprocess ended with code: ", status_ptr) if debug?

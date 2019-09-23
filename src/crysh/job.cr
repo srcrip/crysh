@@ -6,19 +6,29 @@
 # A job is a collection of processes bound together by pipes, with the process group set to the pid of the first process.
 class Job
   # Note, declaring vars here is the same as declaring them in the constructor, except you can also explicitly declare types here.
-  @placeholder_in : IO::FileDescriptor = STDIN
-  @placeholder_out : IO::FileDescriptor = STDOUT
+  # @placeholder_in : IO::FileDescriptor = STDIN
+  # @placeholder_out : IO::FileDescriptor = STDOUT
   @pipe = [] of IO::FileDescriptor
 
-  def initialize
+  def initialize(@pipe_length : Int32)
+    @pipe_length -= 1
     # When a job is made, Strings are input representing the requested programs to launch.
     @commands = [] of String
     # And then they get turned into actual processes bound together by pipes.
     @processes = [] of Process
+    # reader is 0, writer is 1
+    @pipes = [] of Array(IO::FileDescriptor)
+
+    if @pipe_length == 0
+      # do nothing
+    else
+      @pipe_length.times do |n|
+        # pipe usually returns a tuple, so we cast it to an array for conveinance
+        @pipes << IO.pipe.to_a
+      end
+    end
 
     @pipe_in, @pipe_out = IO.pipe
-    # @pipe_out = STDOUT
-    # @pipe_in = STDIN
   end
 
   # Add a command to this job.
@@ -38,12 +48,12 @@ class Job
       Builtin.call_builtin(program, args.join)
     else
       # First we need to set the placeholder file descriptors to some initial values
-      if index + 1 < pipe_length
-        @pipe = IO.pipe.to_a
-        @placeholder_out = @pipe.last
-      else
-        @placeholder_out = STDOUT
-      end
+      # if index + 1 < pipe_length
+      #   @pipe = IO.pipe.to_a
+      #   @placeholder_out = @pipe.last
+      # else
+      #   @placeholder_out = STDOUT
+      # end
 
       # now we can attempt to spawn the process.
       @processes.push(spawn_process(program, args, pipe_length))
@@ -85,14 +95,44 @@ class Job
 
       # Try to exec the command. This mutates this crystal process that we've forked into whatever command is.
       begin
-        if @processes.size == 0 # If this is the first command in the job
-          @pipe_out = STDOUT if @processes.size + 1 == pipe_length
-          Process.exec command, arguments, nil, false, false, STDIN, @pipe_out
-        elsif @processes.size + 1 == pipe_length # if this is the second
-          Process.exec command, arguments, nil, false, false, @pipe_in
-        else # if this is a command in the middle
-          Process.exec command, arguments, nil, false, false, @pipe_in, @pipe_out
+
+        # unless this job only has 1 process... IE theres no pipes at all!
+        unless @pipes.size == 0
+          n = @processes.size
+          if @processes.size == 0 # If this is the first command in the job
+            # @pipes[n][1] = STDOUT if @processes.size + 1 == pipe_length
+            pp "hit first"
+            pp n
+            pp @pipes[n]
+            # pp @pipes[n][1]
+            Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
+          elsif @processes.size + 1 == pipe_length # if this is the last
+            # @pipes[n][1] = STDOUT
+            pp "hit last"
+            pp n
+            pp @pipes[n]
+            # pp @pipes[n][0]
+            Process.exec command, arguments, nil, false, false, @pipes[n][0]
+          else # if this is a command in the middle
+            pp "hit middle"
+            pp n
+            pp @pipes[n][0]
+            pp @pipes[n+1][1]
+            # pp @pipes[n][0], @pipes[n+1][1]
+            Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
+          end
+        else
+          Process.exec command, arguments
         end
+
+        # if @processes.size == 0 # If this is the first command in the job
+        #   @pipe_out = STDOUT if @processes.size + 1 == pipe_length
+        #   Process.exec command, arguments, nil, false, false, STDIN, @pipe_out
+        # elsif @processes.size + 1 == pipe_length # if this is the second
+        #   Process.exec command, arguments, nil, false, false, @pipe_in
+        # else # if this is a command in the middle
+        #   Process.exec command, arguments, nil, false, false, @pipe_in, @pipe_out
+        # end
       rescue err : Errno
         # Display a notice if executing the command failed.
         puts "crysh: unknown command."

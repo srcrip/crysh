@@ -17,10 +17,11 @@ class Job
     @processes = [] of Process
 
     @pipe_in, @pipe_out = IO.pipe
+    # @pipe_out = STDOUT
+    # @pipe_in = STDIN
   end
 
   # Add a command to this job.
-  # def add_command(lang, c : String, index : Int32)
   def add_command(c : String, index : Int32, pipe_length : Int32)
     # c here is raw input, the args have not yet been seperated.
     @commands.push c
@@ -82,19 +83,14 @@ class Job
       #   @placeholder_in.close
       # end
 
-      # TODO
-      # close fds at /proc/$pid/fd/0
-
-
       # Try to exec the command. This mutates this crystal process that we've forked into whatever command is.
       begin
-        # if this is last command in the pipeline, don't redirect out
-        if @processes.size + 1 == pipe_length
-          Process.exec command, arguments, nil, false, false, @pipe_in
-        # if this is first command, don't redirect in
-        elsif @processes.size == 0
+        if @processes.size == 0 # If this is the first command in the job
+          @pipe_out = STDOUT if @processes.size + 1 == pipe_length
           Process.exec command, arguments, nil, false, false, STDIN, @pipe_out
-        else
+        elsif @processes.size + 1 == pipe_length # if this is the second
+          Process.exec command, arguments, nil, false, false, @pipe_in
+        else # if this is a command in the middle
           Process.exec command, arguments, nil, false, false, @pipe_in, @pipe_out
         end
       rescue err : Errno

@@ -34,20 +34,20 @@ lib LibC
   fun tcgetsid(fd : Int32) : Int32
 end
 
-Signal::STOP.trap do |x|
-  pp "SIGSTOP received\n"
-  # if fg = Jobs.manager.fg
-  #   fg.kill(Signal::STOP)
-  # end
-end
+# Signal::STOP.trap do |x|
+#   pp "SIGSTOP received\n"
+#   # if fg = Jobs.manager.fg
+#   #   fg.kill(Signal::STOP)
+#   # end
+# end
 
-Signal::INT.trap do |x|
-  pp "SIGINT received\n"
-end
+# Signal::INT.trap do |x|
+#   pp "SIGINT received\n"
+# end
 
-Signal::HUP.trap do |x|
-  pp "SIGHUP received\n"
-end
+# Signal::HUP.trap do |x|
+#   pp "SIGHUP received\n"
+# end
 
 Dir.mkdir "#{ENV["HOME"]}/.config/" unless Dir.exists? "#{ENV["HOME"]}/.config/"
 Dir.mkdir "#{ENV["HOME"]}/.config/crysh/" unless Dir.exists? "#{ENV["HOME"]}/.config/crysh/"

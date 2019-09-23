@@ -15,7 +15,8 @@ class Job
     commands.each_with_index do |command, index|
       redirect = redirections[index]
       redirect = nil if redirect == ""
-      add_command(command, index, redirect, commands.size)
+      next_command = (index+1 == commands.size) ? nil : commands[index+1]
+      add_command(command, next_command, index, redirect, commands.size)
     end
 
     # Wait for the whole job to finish, after each finish start clearing pipes
@@ -58,7 +59,7 @@ class Job
   end
 
   # Add a command to this job.
-  def add_command(c : String?, index : Int32, redirect : String?, pipe_length : Int32)
+  def add_command(c : String?, next_c : String?, index : Int32, redirect : String?, pipe_length : Int32)
     return unless c
 
     # c here is raw input, the args have not yet been seperated.
@@ -71,6 +72,13 @@ class Job
     # make sure program is a string.
     program = program.to_s
 
+    if next_c
+      next_cmd = next_c.to_s.split
+      next_cmd = next_cmd.first
+    else
+      next_cmd = nil
+    end
+
     p "Program: " + program if debug?
 
     if Builtin.builtin? (program)
@@ -80,8 +88,8 @@ class Job
     else
 
       # now we can attempt to spawn the process.
-      last_redir = @redirs[index-1]
-      @processes.push(spawn_process(program, args, redirect, last_redir, pipe_length))
+      last_redir = @redirs[index-1] unless index == 0
+      @processes.push(spawn_process(program, next_cmd, args, redirect, last_redir, pipe_length))
 
       p "Process:" if debug?
       pp @processes.last if debug?
@@ -89,7 +97,7 @@ class Job
   end
 
   # Spawn/Exec a process in this job.
-  def spawn_process(command, arguments, redirect, last_redir, pipe_length)
+  def spawn_process(command, next_cmd, arguments, redirect, last_redir, pipe_length)
     Process.fork {
       set_process_group
       # Try to exec the command. This mutates this crystal process that we've forked into whatever command is.
@@ -102,11 +110,11 @@ class Job
           Process.exec command, arguments
         else
           if redirect == "|" || last_redir == "|"
-            spawn_with_pipe command, arguments, pipe_length
+            spawn_with_pipe command, arguments, redirect, last_redir, pipe_length
           elsif redirect == ">" || last_redir == ">"
-            spawn_with_gt command, arguments, pipe_length
+            spawn_with_gt command, next_cmd, arguments, redirect, last_redir, pipe_length
           elsif redirect == "<" || last_redir == "<"
-            spawn_with_lt command, arguments, pipe_length
+            spawn_with_lt command, next_cmd, arguments, redirect, last_redir, pipe_length
           end
         end
       rescue err : Errno
@@ -119,30 +127,48 @@ class Job
 
 
   # This is for redirection > way
-  def spawn_with_gt(command, arguments, pipe_length)
+  def spawn_with_gt(command, next_cmd, arguments, redirect, last_redir, pipe_length)
     n = @processes.size - 1
-    if @processes.size == 0 # If this is the first command in the job
-      n = 0
-      # @pipes[n][1] = STDOUT if @processes.size + 1 == pipe_length
-      Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
-    elsif @processes.size + 1 == pipe_length # if this is the last
-      Process.exec command, arguments, nil, false, false, @pipes[n][0]
-    else # if this is a command in the middle
-      Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
+
+    if next_cmd
+      if redirect == ">"
+        fd = File.open(next_cmd, mode = "w")
+        fd = @pipes[n][1].reopen(fd)
+
+        if @processes.size == 0 # If this is the first command in the job
+          n = 0
+          Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
+        elsif @processes.size + 1 == pipe_length # if this is the last
+          Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n][1]
+        else # if this is a command in the middle
+          Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
+        end
+
+      elsif last_redir == ">"
+        fd = File.open(command, mode = "r")
+        fd = @pipes[n][0].reopen(fd)
+      end
     end
   end
 
   # This is for redirection < way
-  def spawn_with_lt(command, arguments, pipe_length)
+  def spawn_with_lt(command, next_cmd, arguments, redirect, last_redir, pipe_length)
     # undefined
   end
 
   # This is classic pipe redirection
-  def spawn_with_pipe(command, arguments, pipe_length)
+  def spawn_with_pipe(command, arguments, redirect, last_redir, pipe_length)
     n = @processes.size - 1
+
+    # if redirect == ">"
+    #   fd = File.open("out.txt", mode = "w")
+    #   puts @pipes[n][1]
+    #   fd = @pipes[n][1].reopen(fd)
+    #   pp @pipes[n][1]
+    # end
+
     if @processes.size == 0 # If this is the first command in the job
       n = 0
-      # @pipes[n][1] = STDOUT if @processes.size + 1 == pipe_length
       Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
     elsif @processes.size + 1 == pipe_length # if this is the last
       Process.exec command, arguments, nil, false, false, @pipes[n][0]

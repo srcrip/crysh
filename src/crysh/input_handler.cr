@@ -5,6 +5,8 @@ class InputHandler
     # Split input into commands
     commands = split_on_pipes(input)
 
+    # pp commands
+
     # Add the gathered commands into a job
     job = Jobs.manager.add(Job.new(commands.size))
     commands.each_with_index do |command, index|

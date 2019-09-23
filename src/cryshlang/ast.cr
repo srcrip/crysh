@@ -25,6 +25,29 @@ class XProgram < Expression
   end
 end
 
+class Redirect < Expression
+end
+
+class RedirectPipe < Redirect
+  def to_s
+    "Pipe"
+  end
+end
+
+
+class RedirectWriteOut < Redirect
+  def to_s
+    "Write STDOUT >"
+  end
+end
+
+
+class RedirectReadIn < Redirect
+  def to_s
+    "Read STDIN <"
+  end
+end
+
 class ANumber < Expression
   values({
            value: Float64

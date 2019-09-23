@@ -12,8 +12,11 @@ class EXP_LANG::Parser < CLTK::Parser
   right :RPAREN, :RBRACK, :RCBRACK
 
   production(:statement) do
-    clause("expressions sep*") do |e|
-      XProgram.new(expressions: e.as(Array).map(&.as(Expression)))
+    clause("expressions sep*") do |e, sep|
+      # pp sep
+      es = e.as(Array).map(&.as(Expression))
+      ps = sep.as(Array).map(&.as(Redirect))
+      XProgram.new( expressions: es )
     end
   end
 
@@ -34,6 +37,7 @@ class EXP_LANG::Parser < CLTK::Parser
 
     # most basic
     clause(:identifier)
+    clause(:redirect)
     clause(:string)
     clause(:number)
     clause(:NIL)            { KNil.new }
@@ -55,6 +59,16 @@ class EXP_LANG::Parser < CLTK::Parser
   end
 
   build_list_production(:array_elements, :e, :comma)
+
+  production(:redirect) do
+    clause("WS? redirect_ops WS?") { |_, x, _| x }
+  end
+
+  production(:redirect_ops) do
+    clause(:LT)   { |x| RedirectReadIn.new() }
+    clause(:GT)   { |x| RedirectWriteOut.new() }
+    clause(:PIPE) { |x| RedirectPipe.new() }
+  end
 
   production(:hash) do
     clause("LCBRACK hash_pairs RCBRACK") do |_, hash_pairs, _|

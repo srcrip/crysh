@@ -13,8 +13,7 @@ module EXP_LANG
     # Skip whitespace.
     # rule(" ")
 
-    # Ignore pipes for now
-    rule("|")
+    rule("|")   { { :PIPE } }
 
     # Keywords
     rule("def") { { :DEF    } }
@@ -25,7 +24,8 @@ module EXP_LANG
     rule("nil") { { :NIL    } }
     rule("true")  { { :TRUE   } }
     rule("false") { { :FALSE  } }
-                rule(".")       { { :DOT    } }
+    rule(".")       { { :DOT    } }
+
     # Operators and delimiters.
     rule("=") { { :ASSIGN } }
     rule("(") { { :LPAREN } }
@@ -42,13 +42,14 @@ module EXP_LANG
     rule("\*")  { { :MUL    } }
     rule("/") { { :DIV    } }
     rule("<") { { :LT     } }
+    rule(">") { { :GT     } }
     rule("||")  { { :OR     } }
     rule("&&")  { { :AND    } }
 
-                # Control Flow
-                rule("if")   { { :IF    } }
-                rule("then") { { :THEN  } }
-                rule("else") { { :ELSE  } }
+    # Control Flow
+    rule("if")   { { :IF    } }
+    rule("then") { { :THEN  } }
+    rule("else") { { :ELSE  } }
 
     # Identifier rule.
     rule(/"[^\"]*"/) { |t|        {:STRING, t[1...-1]} }
@@ -62,9 +63,9 @@ module EXP_LANG
     # Comment rules.
     rule(/#/)       { |a| push_state :comment }
     rule(/\n/, :comment) do |a|
-                  pop_state
-                  { :CR }
-                end
+        pop_state
+        { :CR }
+    end
 
     rule(/./, :comment)
   end

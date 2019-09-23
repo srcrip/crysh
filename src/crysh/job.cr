@@ -21,6 +21,12 @@ class Job
 
     # Wait for the whole job to finish, after each finish start clearing pipes
     @processes.each_with_index do |proc, index|
+      # If this command is doing < redirection, we need to kill these pipes right now
+      if redirections[index] == "<"
+        @pipes[index][1].close
+        @pipes[index][0].close
+      end
+
       LibC.waitpid(proc.pid, out status_ptr, WUNTRACED)
 
       # Close this jobs pipes
@@ -91,6 +97,8 @@ class Job
       last_redir = @redirs[index-1] unless index == 0
       @processes.push(spawn_process(program, next_cmd, args, redirect, last_redir, pipe_length))
 
+      # pp @processes.last
+
       p "Process:" if debug?
       pp @processes.last if debug?
     end
@@ -153,7 +161,19 @@ class Job
 
   # This is for redirection < way
   def spawn_with_lt(command, next_cmd, arguments, redirect, last_redir, pipe_length)
-    # undefined
+    n = @processes.size - 1
+
+    if @processes.size == 0 # If this is the first command in the job
+      n = 0
+      @pipes[n][1].close
+      Process.exec command, arguments, nil, false, false, @pipes[n][0]
+    elsif last_redir == "<"
+      # TODO read until eof?
+      fd = File.read(command)
+      @pipes[n][1] << fd
+      @pipes[n][1].close
+      @pipes[n][0].close
+    end
   end
 
   # This is classic pipe redirection
@@ -183,8 +203,6 @@ class Job
     else # if this is the last
       Process.exec command, arguments, nil, false, false, @pipes[n][0]
     end
-
-
   end
 
   def set_process_group

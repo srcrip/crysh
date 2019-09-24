@@ -4,9 +4,9 @@ require "./cryshlang/ast"
 require "./cryshlang/scope"
 require "./cryshlang/parser"
 require "./cryshlang/exceptions"
-require "../../src/cltk/macros"
-require "../../src/cltk/parser/type"
-require "../../src/cltk/parser/parser_concern"
+require "./cltk/macros"
+require "./cltk/parser/type"
+require "./cltk/parser/parser_concern"
 
 DEBUG = false
 

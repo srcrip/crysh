@@ -18,7 +18,7 @@ module Builtin
     LIST.has_key?(program)
   end
 
-  def call_builtin(program, arguments)
+  def call_builtin(program : String, arguments : String)
     LIST[program].call(arguments)
   rescue err : Errno
     puts "crysh: error in builtin."

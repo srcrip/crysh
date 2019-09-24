@@ -169,9 +169,9 @@ class Job
       Process.exec command, arguments, nil, false, false, @pipes[n][0]
     elsif last_redir == "<"
       # TODO read until eof?
-      fd = File.read(command)
-      @pipes[n][1] << fd
-      @pipes[n][1].close
+
+
+
       @pipes[n][0].close
     end
   end

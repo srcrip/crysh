@@ -37,8 +37,10 @@ def export(args)
 end
 
 def shell_alias(input)
+  # TODO implement
+  puts "unimplemented"
   name, command = input.split('=')
-  puts "Made alias " + name + " = " + command if debug?
+  # puts "Made alias " + name + " = " + command if debug?
 end
 
 def help(args)

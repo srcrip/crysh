@@ -17,6 +17,6 @@ shards:
     commit: 2174e500edcb199ecc40caabcc36856f07e7ca27
 
   msgpack:
-    github: benoist/msgpack-crystal
+    github: crystal-community/msgpack-crystal
     version: 0.10.0
 

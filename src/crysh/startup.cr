@@ -12,7 +12,7 @@ def startup
 end
 
 def parse_options
-  OptionParser.parse! do |parser|
+  OptionParser.parse do |parser|
     parser.banner = "crysh: the crystal shell"
     parser.on("-c", "--command=COMMANDS", "Evaluate the specified commands and exit instead of entering interactive mode.") do |cmd|
       set_interactive false

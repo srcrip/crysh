@@ -101,14 +101,17 @@ module Crysh
 
         evaluated = lang.evaluate input
 
-        # The interpreter returns nil upon inputs that would return undefined.
-        if evaluated == nil
-          # If the interpreter can't figure things out, it might be a shell
-          # command, so we pass it to this method.
-          # InputHandler.interpret input, initial_pgid
-        else
-          puts evaluated.to_s unless evaluated == false
-        end
+        ##############
+        # Deprecated #
+        ##############
+        # # The interpreter returns nil upon inputs that would return undefined.
+        # if evaluated == nil
+        #   # If the interpreter can't figure things out, it might be a shell
+        #   # command, so we pass it to this method.
+        #   # InputHandler.interpret input, initial_pgid
+        # else
+        #   puts evaluated.to_s unless evaluated == false
+        # end
       end
 
       # save all the history from this session.

@@ -69,5 +69,5 @@ class Parser < CLTK::Parser
 
   list(:arg_defs, :IDENT, :COMMA)
 
-  finalize(use: "./cryshlang_parser.bin")
+  finalize(use: "/tmp/cryshlang_parser.bin")
 end

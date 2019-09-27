@@ -1,5 +1,5 @@
-require "../../src/cltk/parser/type"
-require "../../src/cltk/parser"
+require "../../lib/cltk/src/cltk/parser/type"
+require "../../lib/cltk/src/cltk/parser"
 require "./ast"
 
 class EXP_LANG::Parser < CLTK::Parser
@@ -151,4 +151,5 @@ class EXP_LANG::Parser < CLTK::Parser
   build_nonempty_list_production(:fun_body, :e, :sep)
 
   finalize
+  # finalize(use: "cryshlang.bin")
 end

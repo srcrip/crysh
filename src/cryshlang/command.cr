@@ -1,6 +1,3 @@
-require "../../src/cltk/ast"
-require "./scope"
-require "./ast"
 require "../crysh/job"
 
 class Command

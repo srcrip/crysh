@@ -1,12 +1,23 @@
 require "readline"
+
 require "./cryshlang/lexer"
 require "./cryshlang/ast"
 require "./cryshlang/scope"
-require "./cryshlang/parser"
+
 require "./cryshlang/exceptions"
-require "./cltk/macros"
-require "./cltk/parser/type"
-require "./cltk/parser/parser_concern"
+
+require "../lib/cltk/src/cltk/macros"
+require "../lib/cltk/src/cltk/parser/type"
+require "../lib/cltk/src/cltk/parser/parser_concern"
+
+# insert_output_of() do
+  require "./cryshlang/parser"
+  # module CLTK
+  #   alias TokenValue = (String|Int32|Float64)?
+  # end
+  # require "./lib/cltk/src/cltk/parser/crystalize"
+  # EXP_LANG::Parser.crystalize
+# end
 
 DEBUG = false
 

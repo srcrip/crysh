@@ -1,4 +1,4 @@
-require "../../src/cltk/ast"
+require "../../lib/cltk/src/cltk/ast"
 require "./scope"
 require "./command"
 

@@ -1,7 +1,7 @@
 module CLTK
   alias TokenValue = (String|Int32|Float64)?
 end
-require "../../src/cltk/scanner"
+require "../../lib/cltk/src/cltk/scanner"
 
 module EXP_LANG
   class Lexer < CLTK::Scanner

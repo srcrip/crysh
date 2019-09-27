@@ -2,11 +2,11 @@ version: 1.0
 shards:
   cltk:
     github: ziprandom/cltk
-    commit: 6fd2b8fc98cc55950bcc57187881b68a6230ebcc
+    commit: bdffe14234c215e2657cbcf1f1e53509faeba66c
 
   crystal-dfa:
     github: ziprandom/crystal-dfa
-    commit: 6cc295c622226da3e9b2131ab8ce340c5f18ecb1
+    commit: 2a9c8233fe1682287a35f1fac30f4092cc2a4382
 
   cute:
     github: Papierkorb/cute
@@ -14,9 +14,9 @@ shards:
 
   fancyline:
     github: Papierkorb/fancyline
-    commit: 2174e500edcb199ecc40caabcc36856f07e7ca27
+    commit: 39098fdc6e5ee6225a9dadecf442cfe7c9888681
 
   msgpack:
     github: crystal-community/msgpack-crystal
-    version: 0.10.0
+    version: 0.14.2
 

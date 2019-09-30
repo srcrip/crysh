@@ -24,9 +24,13 @@ class Job
     # Wait for the whole job to finish, after each finish start clearing pipes
     @processes.each_with_index do |proc, index|
       # If this command is doing < redirection, we need to kill these pipes right now
-      if redirections[index] == "<"
-        @pipes[index][1].close
-        @pipes[index][0].close
+      # TODO: This is a bit of a hack... but not sure a better place to do this.
+      redir_op = redirections[index]
+      if redir_op
+        if redir_op.redir.to_s == "<"
+          @pipes[index][1].close
+          @pipes[index][0].close
+        end
       end
 
       LibC.waitpid(proc.pid, out status_ptr, WUNTRACED)
@@ -100,8 +104,6 @@ class Job
 
       @processes.push(spawn_process(program, next_cmd, args, redirect, last_redir, pipe_length))
 
-      # pp @processes.last
-
       p "Process:" if debug?
       pp @processes.last if debug?
     end
@@ -113,25 +115,15 @@ class Job
       set_process_group
       # Try to exec the command. This mutates this crystal process that we've forked into whatever command is.
       begin
-        ##
-        ## IO Redirection time
-        ##
         # First we need to check if this job only has one command, in which case no redirection is needed.
         if @pipes.size == 0
           Process.exec command, arguments
         else
-
+          # Otherwise, we need to do io redirection.
+          # First we turn the AST nodes we got back from the parser into a new class that we can use here.
           next_r, last_r = RedirectOperator.operators_for_job(redirect, last_redir)
-          # pp "Process: ", Process.pid
+          # Then we actually start spawning processes. The real magic happens in the method below.
           spawn_pipeline(next_r, last_r, command, arguments, next_cmd)
-
-          # if redirect == "|" || last_redir == "|"
-          #   spawn_with_pipe command, next_cmd, arguments, redirect, last_redir, pipe_length
-          # elsif redirect == ">" || last_redir == ">"
-          #   spawn_with_gt command, next_cmd, arguments, redirect, last_redir, pipe_length
-          # elsif redirect == "<" || last_redir == "<"
-          #   spawn_with_lt command, next_cmd, arguments, redirect, last_redir, pipe_length
-          # end
         end
       rescue err : Errno
         # Display a notice if executing the command failed.
@@ -155,11 +147,41 @@ class Job
        Process.exec cmd, args, nil, false, false, @pipes[n][0], @pipes[n+1][1]
       end
     when WriteOperator
-      # Undefined
+      return unless next_cmd
+      fd = File.open(next_cmd, mode = "w")
+      fd = @pipes[n][1].reopen(fd)
+
+      if first_command?
+        Process.exec cmd, args, nil, false, false, STDIN, @pipes[n][1]
+      else
+        Process.exec cmd, args, nil, false, false, @pipes[n][0], @pipes[n][1]
+      end
     when ReadOperator
-      # Undefined
+      if first_command?
+        @pipes[n][1].close
+        Process.exec cmd, args, nil, false, false, @pipes[n][0]
+      else
+        if last_r == "<"
+          fd = File.read(cmd)
+          @pipes[n][1] << fd
+          @pipes[n][1].close
+          @pipes[n][0].close
+        end
+      end
     else
-      Process.exec cmd, args, nil, false, false, @pipes[n][0]
+      case last_r
+      when PipeOperator
+        Process.exec cmd, args, nil, false, false, @pipes[n][0]
+      when WriteOperator
+        fd = File.open(cmd, mode = "r")
+        fd = @pipes[n][0].reopen(fd)
+      when ReadOperator
+        # TODO read until eof?
+        fd = File.read(cmd)
+        @pipes[n][1] << fd
+        @pipes[n][1].close
+        @pipes[n][0].close
+      end
     end
   end
 
@@ -169,77 +191,6 @@ class Job
 
   def last_command?
     @processes.size == @pipe_length
-  end
-
-  # This is for redirection > way
-  def spawn_with_gt(command, next_cmd, arguments, redirect, last_redir, pipe_length)
-    n = @processes.size - 1
-
-    if next_cmd
-      if redirect == ">"
-        fd = File.open(next_cmd, mode = "w")
-        fd = @pipes[n][1].reopen(fd)
-
-        if @processes.size == 0 # If this is the first command in the job
-          n = 0
-          Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
-        elsif @processes.size + 1 == pipe_length # if this is the last
-          Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n][1]
-        else # if this is a command in the middle
-          Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
-        end
-
-      elsif last_redir == ">"
-        fd = File.open(command, mode = "r")
-        fd = @pipes[n][0].reopen(fd)
-      end
-    end
-  end
-
-  # This is for redirection < way
-  def spawn_with_lt(command, next_cmd, arguments, redirect, last_redir, pipe_length)
-    n = @processes.size - 1
-
-    if @processes.size == 0 # If this is the first command in the job
-      n = 0
-      @pipes[n][1].close
-      Process.exec command, arguments, nil, false, false, @pipes[n][0]
-    elsif last_redir == "<"
-      # TODO read until eof?
-      fd = File.read(command)
-      @pipes[n][1] << fd
-      @pipes[n][1].close
-      @pipes[n][0].close
-    end
-  end
-
-  # This is classic pipe redirection
-  def spawn_with_pipe(command, next_cmd, arguments, redirect, last_redir, pipe_length)
-    n = @processes.size - 1
-
-    if next_cmd
-      if redirect == ">"
-        if @processes.size == 0 # If this is the first command in the job
-          n = 0
-          fd = File.open(next_cmd, mode = "w")
-          fd = @pipes[n][1].reopen(fd)
-          Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
-        else # if this is a command in the middle
-          fd = File.open(next_cmd, mode = "w")
-          fd = @pipes[n+1][1].reopen(fd)
-          Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
-        end
-      else
-        if @processes.size == 0 # If this is the first command in the job
-          n = 0
-          Process.exec command, arguments, nil, false, false, STDIN, @pipes[n][1]
-        else # if this is a command in the middle
-          Process.exec command, arguments, nil, false, false, @pipes[n][0], @pipes[n+1][1]
-        end
-      end
-    else # if this is the last
-      Process.exec command, arguments, nil, false, false, @pipes[n][0]
-    end
   end
 
   def set_process_group

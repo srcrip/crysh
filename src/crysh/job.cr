@@ -141,8 +141,6 @@ class Job
     when PipeOperator
       if first_command?
        Process.exec cmd, args, nil, false, false, STDIN, @pipes[n][1]
-      elsif last_command?
-       Process.exec cmd, args, nil, false, false,  @pipes[n][0]
       else
        Process.exec cmd, args, nil, false, false, @pipes[n][0], @pipes[n+1][1]
       end

@@ -27,13 +27,14 @@ class XProgram < Expression
     exps.each_with_index.reduce(EXP_LANG::Undefined) do |lastResult, (exp, index)|
       val = ""
       # check if the next expression is a redirect
-      if index + 1 != exps.size && exps[index + 1].is_a? Redirect
+      if index + 1 != exps.size && exps[index + 1].is_a? RedirectWithMod
         exps[cmd_index_start..index].each do |c|
           evaluated = c.eval_scope(scope)
           val = [val, evaluated].join(" ") if evaluated.is_a? String
         end
-        commands << Command.new(val, exps[index + 1].as(Redirect))
-      elsif exp.is_a? Redirect
+        ex = exps[index + 1].eval_scope(scope).as(RedirectWithMod)
+        commands << Command.new(val, ex)
+      elsif exp.is_a? RedirectWithMod
         cmd_index_start = index + 1
       elsif index + 1 == exps.size
         exps[cmd_index_start..index].each do |c|
@@ -51,6 +52,14 @@ class XProgram < Expression
     # return false for now
     false
   end
+end
+
+class RedirectWithMod < Expression
+  values({
+           left_mod: Expression?,
+           redir: Redirect,
+           right_mod: Expression?
+         })
 end
 
 class Redirect < Expression

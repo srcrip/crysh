@@ -13,8 +13,14 @@ class EXP_LANG::Parser < CLTK::Parser
 
   production(:statement) do
     clause("expressions sep*") do |e, sep|
-      es = e.as(Array).map(&.as(Expression))
-      ps = sep.as(Array).map(&.as(Redirect))
+      es = e.as(Array).map { |node|
+        if node.is_a? Array
+          RedirectWithMod.new(left_mod: node[0], redir: node[1], right_mod: node[2])
+        else
+          node.as(Expression)
+        end
+      }
+      # ps = sep.as(Array).map(&.as(Redirect))
       XProgram.new( expressions: es )
     end
   end
@@ -60,7 +66,14 @@ class EXP_LANG::Parser < CLTK::Parser
   build_list_production(:array_elements, :e, :comma)
 
   production(:redirect) do
-    clause("WS? redirect_ops WS?") { |_, x, _| x }
+    clause("WS* modifier? redirect_ops modifier? WS*") { |_, left_mod, x, right_mod, _|
+      [left_mod, x, right_mod]
+    }
+  end
+
+  production(:modifier) do
+    clause(:number)
+    clause(:identifier)
   end
 
   production(:redirect_ops) do
@@ -150,6 +163,7 @@ class EXP_LANG::Parser < CLTK::Parser
 
   build_nonempty_list_production(:fun_body, :e, :sep)
 
+  # TODO, finalize with serialization only if release mode is on
   finalize
   # finalize(use: "cryshlang.bin")
 end

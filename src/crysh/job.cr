@@ -1,3 +1,5 @@
+require "./redirect_operator"
+
 # NOTE: Detecting whether to execute a job as a unix command or a expression in Cryshlang.
 # 1. Is the first argument a unix command or a builtin?
 # 2. If so, process as a unix process
@@ -46,7 +48,7 @@ class Job
     @pipe_length -= 1
     # When a job is made, Strings are input representing the requested programs to launch.
     @commands = [] of String
-    @redirs = [] of String
+    @redirs = [] of RedirectWithMod
     # And then they get turned into actual processes bound together by redirect operators.
     @processes = [] of Process
     # reader is 0, writer is 1
@@ -65,7 +67,7 @@ class Job
   end
 
   # Add a command to this job.
-  def add_command(c : String?, next_c : String?, index : Int32, redirect : String?, pipe_length : Int32)
+  def add_command(c : String?, next_c : String?, index : Int32, redirect : RedirectWithMod?, pipe_length : Int32)
     return unless c
 
     # c here is raw input, the args have not yet been seperated.
@@ -95,6 +97,7 @@ class Job
 
       # now we can attempt to spawn the process.
       last_redir = @redirs[index-1] unless index == 0
+
       @processes.push(spawn_process(program, next_cmd, args, redirect, last_redir, pipe_length))
 
       # pp @processes.last
@@ -117,13 +120,18 @@ class Job
         if @pipes.size == 0
           Process.exec command, arguments
         else
-          if redirect == "|" || last_redir == "|"
-            spawn_with_pipe command, next_cmd, arguments, redirect, last_redir, pipe_length
-          elsif redirect == ">" || last_redir == ">"
-            spawn_with_gt command, next_cmd, arguments, redirect, last_redir, pipe_length
-          elsif redirect == "<" || last_redir == "<"
-            spawn_with_lt command, next_cmd, arguments, redirect, last_redir, pipe_length
-          end
+
+          next_r, last_r = RedirectOperator.operators_for_job(redirect, last_redir)
+          # pp "Process: ", Process.pid
+          spawn_pipeline(next_r, last_r, command, arguments, next_cmd)
+
+          # if redirect == "|" || last_redir == "|"
+          #   spawn_with_pipe command, next_cmd, arguments, redirect, last_redir, pipe_length
+          # elsif redirect == ">" || last_redir == ">"
+          #   spawn_with_gt command, next_cmd, arguments, redirect, last_redir, pipe_length
+          # elsif redirect == "<" || last_redir == "<"
+          #   spawn_with_lt command, next_cmd, arguments, redirect, last_redir, pipe_length
+          # end
         end
       rescue err : Errno
         # Display a notice if executing the command failed.
@@ -133,6 +141,35 @@ class Job
     }
   end
 
+  def spawn_pipeline(next_r : RedirectOperator?, last_r : RedirectOperator?, cmd : String, args : Array(String), next_cmd : String?)
+    # n tracks our current place in the pipeline array
+    n = first_command? ? 0 : @processes.size - 1
+
+    case next_r
+    when PipeOperator
+      if first_command?
+       Process.exec cmd, args, nil, false, false, STDIN, @pipes[n][1]
+      elsif last_command?
+       Process.exec cmd, args, nil, false, false,  @pipes[n][0]
+      else
+       Process.exec cmd, args, nil, false, false, @pipes[n][0], @pipes[n+1][1]
+      end
+    when WriteOperator
+      # Undefined
+    when ReadOperator
+      # Undefined
+    else
+      Process.exec cmd, args, nil, false, false, @pipes[n][0]
+    end
+  end
+
+  def first_command?
+    @processes.size == 0
+  end
+
+  def last_command?
+    @processes.size == @pipe_length
+  end
 
   # This is for redirection > way
   def spawn_with_gt(command, next_cmd, arguments, redirect, last_redir, pipe_length)
@@ -222,3 +259,4 @@ class Job
   # Expose processes. This is Crystal's version of attr_accessor.
   property processes
 end
+

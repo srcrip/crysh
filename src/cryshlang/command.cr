@@ -1,7 +1,7 @@
 require "../crysh/job"
 
 class Command
-  def initialize(@commands : String?, @redirect : Redirect?)
+  def initialize(@commands : String?, @redirect : RedirectWithMod?)
   end
 
   def to_s
@@ -29,7 +29,7 @@ class Pipeline
     @job = Jobs.manager.add(Job.new(@commands.size))
 
     # Run the jobs, by adding in commands to it
-    @job.run(@commands.map(&.commands), @commands.map(&.redirect.to_s))
+    @job.run(@commands.map(&.commands), @commands.map(&.redirect))
   end
 
   def to_s

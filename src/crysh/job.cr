@@ -146,6 +146,18 @@ class Job
       end
     when WriteOperator
       return unless next_cmd
+
+      # Handle different types of IO redirection.
+      # IE: make install 2> error.log
+      mod_fd = next_r.@left_mod
+      if mod_fd == "" || mod_fd.nil?
+        mod_fd = 1
+        left = IO::FileDescriptor.new(mod_fd)
+      else
+        left = File.open(mod_fd)
+      end
+      pp left
+
       fd = File.open(next_cmd, mode = "w")
       fd = @pipes[n][1].reopen(fd)
 

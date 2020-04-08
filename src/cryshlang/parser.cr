@@ -163,7 +163,9 @@ class EXP_LANG::Parser < CLTK::Parser
 
   build_nonempty_list_production(:fun_body, :e, :sep)
 
-  # TODO, finalize with serialization only if release mode is on
-  finalize
-  # finalize(use: "cryshlang.bin")
+  {% if flag?(:release) %}
+    finalize(use: "crysh-grammar.bin")
+  {% else %}
+    finalize
+  {% end %}
 end

@@ -20,3 +20,7 @@ shards:
     github: crystal-community/msgpack-crystal
     version: 0.14.2
 
+  readline:
+    github: crystal-lang/crystal-readline
+    commit: 0fb7d186da8e1b157998d98d1c96e99699b791eb
+

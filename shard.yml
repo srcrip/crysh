@@ -19,6 +19,6 @@ targets:
   crysh:
     main: src/crysh.cr
 
-crystal: 0.24.2
+crystal: 0.33.0
 
 license: MIT

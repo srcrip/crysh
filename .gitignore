@@ -4,3 +4,4 @@
 /crysh/
 /src/.___generated___code.cr.cr
 /repl
+crysh-grammar.bin

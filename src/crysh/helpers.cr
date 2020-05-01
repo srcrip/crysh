@@ -13,13 +13,6 @@ def save_history(fancy)
   end
 end
 
-def split_on_pipes(line)
-  # TODO below were my attempts to write a regex that would match only on pipes outside of quotes. I didn't succeed so far.
-  # line.match(/([^"'|]+)|["']([^"']+)["']/).flatten.compact
-  # line.scan(/([^"'|]+)|["']([^"']+)["']/)
-  line.split('|')
-end
-
 def get_command(ctx)
   line = ctx.editor.line
   cursor = ctx.editor.cursor.clamp(0, line.size - 1)

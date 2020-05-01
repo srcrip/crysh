@@ -2,6 +2,7 @@
 
 <p align="center">
 <a href="https://crystal-lang.org/"><img src="https://img.shields.io/badge/crystal-v0.34-success"/></a>
+<a href="https://github.com/Sevensidedmarble/crysh/actions?query=workflow%3A%22Crystal+CI%22"><img src="https://github.com/Sevensidedmarble/crysh/workflows/Crystal%20CI/badge.svg"/></a>
 </p>
 
 > A Linux shell written in Crystal.

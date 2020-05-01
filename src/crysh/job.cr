@@ -13,6 +13,7 @@ class Job
   @pipe = [] of IO::FileDescriptor
 
   def run(commands, redirections)
+
     # Add commands to the job
     commands.each_with_index do |command, index|
       redirect = redirections[index]
@@ -125,7 +126,7 @@ class Job
           # Then we actually start spawning processes. The real magic happens in the method below.
           spawn_pipeline(next_r, last_r, command, arguments, next_cmd)
         end
-      rescue err : Errno
+      rescue err : RuntimeError
         # Display a notice if executing the command failed.
         puts "crysh: unknown command."
         # TODO: there could be other reasons that exec fails, they might need to return more info to the user.

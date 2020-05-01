@@ -14,7 +14,7 @@ def cd(dir)
   dir = "../../../../" if dir == "....."
   dir = File.expand_path(dir)
   Dir.cd(dir)
-rescue err : Errno
+rescue err : RuntimeError
   puts "crysh: unknown directory."
 end
 

@@ -20,7 +20,7 @@ module Builtin
 
   def call_builtin(program : String, arguments : String)
     LIST[program].call(arguments)
-  rescue err : Errno
+  rescue err : RuntimeError
     puts "crysh: error in builtin."
   end
 end

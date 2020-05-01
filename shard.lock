@@ -14,11 +14,11 @@ shards:
 
   fancyline:
     github: Papierkorb/fancyline
-    commit: 39098fdc6e5ee6225a9dadecf442cfe7c9888681
+    commit: d80a4ac0875f27760753692dad4ece484878868e
 
   msgpack:
     github: crystal-community/msgpack-crystal
-    version: 0.14.2
+    version: 0.17.1
 
   readline:
     github: crystal-lang/crystal-readline

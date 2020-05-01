@@ -85,7 +85,7 @@ module Crysh
 
       begin
         LibC.setsid
-      rescue err : Errno
+      rescue err : RuntimeError
         puts "crysh: failure to become session leader. Is tty interactive?"
       end
 

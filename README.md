@@ -1,12 +1,14 @@
-# crysh
+<h1 align="center">crysh shell</h1>
 
-A Unix shell written in Crystal.
+<p align="center">
+<a href="https://crystal-lang.org/"><img src="https://img.shields.io/badge/crystal-v0.34-success"/></a>
+</p>
 
-`crysh` is very alpha right now. I first implemented a basic shell with process forking and everything, before I realized a parser was necessary for the nitty gritty. The parser is currently being worked on but you're free to play around with what's here already.
+> A Linux shell written in Crystal.
 
 ## Installation
 
-Crysh currently needs to be built from source. To do that, you must install [Crystal](https://crystal-lang.org/).
+Crysh needs to be built from source for now. To do that, you must install [Crystal](https://crystal-lang.org/).
 
 1. Clone this repo: `git clone https://github.com/Sevensidedmarble/crysh.git && cd crysh`
 

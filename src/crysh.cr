@@ -90,6 +90,9 @@ module Crysh
       end
 
       loop do
+        # TODO: Use `select` to listen for input on stdin instead of just
+        # looping over and over:
+        # https://crystal-lang.org/api/0.19.4/IO.html#select%28read_ios%2Cwrite_ios%2Cerror_ios%2Ctimeout_sec%3ALibC%3A%3ATimeT%7CInt%7CFloat%7CNil%29-class-method
         input = collect_input
 
         next if input.nil? || input.empty?
